@@ -16,6 +16,12 @@
 //            Declarations
 /////////////////////////////////////////
 
+typedef enum {
+    CPU = CL_DEVICE_TYPE_CPU,
+    GPU = CL_DEVICE_TYPE_GPU,
+    ACCEL = CL_DEVICE_TYPE_ACCELERATOR
+} DEVICE;
+
 // Error
 typedef struct _EclError{
     int code;
@@ -24,16 +30,27 @@ typedef struct _EclError{
 void eclErrorCheck(_EclError* obj, const char* where);
 
 // Platform
+typedef struct _Devices{
+    cl_device_id devs[EASYCL_MAX_DEVICES];
+    uint32_t count;
+} _Devices;
+
 typedef struct EclPlatform{
     _EclError _error;
 
     cl_platform_id platform;
     char name[EASYCL_MAX_STRING_SIZE];
 
-    cl_device_id _cpus[EASYCL_MAX_DEVICES];
-    cl_device_id _gpus[EASYCL_MAX_DEVICES];
-    cl_device_id _accs[EASYCL_MAX_DEVICES];
+    _Devices _cpus, _gpus, _accs;
+
+    bool _initialized;
 } EclPlatform;
+
+void _eclPlatformDevicesInit(EclPlatform* obj, _Devices* devs, DEVICE type);
+void _eclPlatformDevicesRelease(EclPlatform* obj, _Devices* devs);
+
+void eclPlatformInit(EclPlatform* obj, cl_platform_id platform);
+void eclPlatformRelease(EclPlatform* obj);
 
 // System
 struct EclSystem{
@@ -271,4 +288,67 @@ void eclErrorCheck(_EclError* obj, const char* where){
 
         fprintf(stderr, "%s: %s\n", where, what);
     }
+}
+
+// Platform
+void _eclPlatformDevicesInit(EclPlatform* obj, _Devices* devs, DEVICE type){
+    obj->_error.code = clGetDeviceIDs(obj->platform, type, 0, NULL, &devs->count);
+
+    if(obj->_error.code != CL_DEVICE_NOT_FOUND){
+        eclErrorCheck((_EclError*)obj, "Platform [init]");
+
+        obj->_error.code = clGetDeviceIDs(obj->platform, type, devs->count, devs->devs, NULL);
+        eclErrorCheck((_EclError*)obj, "Platform [init]");
+    }
+}
+void _eclPlatformDevicesRelease(EclPlatform* obj, _Devices* devs){
+    uint32_t count = devs->count;
+    for(uint32_t i = 0; i < count; i++){
+        obj->_error.code = clReleaseDevice(devs->devs[i]);
+        eclErrorCheck((_EclError*)obj, "Platform [release]");
+
+        devs->devs[i] = NULL;
+    }
+}
+
+void eclPlatformInit(EclPlatform* obj, cl_platform_id platform){
+    obj->platform = platform;
+    _eclPlatformDevicesInit(obj, &obj->_cpus, CPU);
+    _eclPlatformDevicesInit(obj, &obj->_gpus, GPU);
+    _eclPlatformDevicesInit(obj, &obj->_accs, ACCEL);
+    obj->_initialized = true;
+}
+void eclPlatformRelease(EclPlatform* obj){
+    _eclPlatformDevicesRelease(obj, &obj->_cpus);
+    _eclPlatformDevicesRelease(obj, &obj->_gpus);
+    _eclPlatformDevicesRelease(obj, &obj->_accs);
+
+    obj->platform = NULL;
+}
+
+
+// System
+void eclSystemInit(){
+    EclSystem._error.code = clGetPlatformIDs(0, NULL, &EclSystem.platforms_count);
+    eclErrorCheck((_EclError*)&EclSystem, "System [init]");
+
+    uint32_t count = EclSystem.platforms_count;
+    if(count > 0){
+        cl_platform_id temp[EASYCL_MAX_PLATFORMS];
+
+        EclSystem._error.code = clGetPlatformIDs(count, temp, NULL);
+        eclErrorCheck((_EclError*)&EclSystem, "System [init]");
+
+        for(uint32_t i = 0; i < count; i++) 
+            eclPlatformInit(EclSystem.platforms + i, temp[i]);
+    }
+
+    EclSystem._initialized = true;
+}
+
+void eclSystemRelease(){
+    uint32_t count = EclSystem.platforms_count;
+
+    for(uint32_t i = 0; i < count; i++)
+        eclPlatformRelease(EclSystem.platforms + i);
 }

@@ -2,10 +2,9 @@
 #include "easycl.h"
 
 int main(){
-    _EclError err = {};
-    err.code = -1;
-    
-    eclErrorCheck(&err, "Test");
 
+    eclSystemInit();
+
+    eclSystemRelease();
     return 0;
 }

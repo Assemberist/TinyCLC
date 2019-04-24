@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gcc -g -std=c11 main.c
+gcc -g -std=c11 -lOpenCL main.c
