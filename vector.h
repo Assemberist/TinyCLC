@@ -81,6 +81,7 @@ T* _cat(_back, std_vector(T))(std_vector(T)* vec){\
     return vec->_data + vec->_size - 1;\
 }\
 void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
+    if(vec->_capacity == 0) vec->reserve(vec, 1);\
     vec->_size++;\
     if(vec->_size > vec->_capacity){\
         vec->_capacity *= STD_VECTOR_CAPACITY_GROW;\
@@ -134,7 +135,7 @@ it++)
 }
 
 // types (std)
-#ifndef STD_ARRAY_DONT_USE_PREDEFINED_TYPES
+#ifndef STD_VECTOR_DONT_USE_PREDEFINED_TYPES
 
 typedef unsigned char unsigned_char;
 typedef unsigned short unsigned_short;

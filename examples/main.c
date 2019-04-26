@@ -1,36 +1,23 @@
 #include <stdio.h>
-#include "array.h"
 #include "vector.h"
+#include "pair.h"
+#include "array.h"
+
+
+VECTORS(std_array(int))
 
 int main()
 {
-    std_array(int) a = std_array_default(int);
-    std_vector(int) b = std_vector_default(int);
+    std_vector(std_array(int)) a = std_vector_default(std_array(int));
+    a.reserve(&a, 2);
 
-    // init
-    a.size = 3;
-    b.reserve(&b, 3);
+    std_array(int) a0 = std_array_default(int);
+    std_array(int) a1 = std_array_default(int);
 
-    // fill
-    foreach(a) *it = 5;
+    a.push_back(&a, a0);
+    a.push_back(&a, a1);
 
-    b.push_back(&b, 5);
-    b.push_back(&b, 5);
-    b.push_back(&b, 5);
-    b.push_back(&b, 7);
-    int backed = b.pop_back(&b);
-
-    //output
-    foreach(a) printf("%d ", *it);
-    puts("");
-
-    foreach(b) printf("%d ", *it);
-    puts("");
-
-    printf("backed %d\n", backed);
-
-    // free
-    b.destroy(&b);
+    a.destroy(&a);
 
     return 0;
 }
