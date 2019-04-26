@@ -8,7 +8,7 @@ void bubble_sort(std_array(int)* arr){
     while(!sorted){
         sorted = true;
     
-        foreach((*arr)){
+        foreach(*arr){
             if(it != std_back(*arr)){
                 auto next = it + 1;
 
