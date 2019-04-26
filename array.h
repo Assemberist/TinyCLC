@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef STD_ARRAY_MAX_SIZE
 #define STD_ARRAY_MAX_SIZE 256
@@ -21,9 +22,16 @@
 } std_array(T);
 
 
-#define foreach(ARRAY) for(__typeof__(ARRAY.data[0])* it = ARRAY.data;\
-it < ARRAY.data + ARRAY.size;\
+#define std_begin(ARRAY) (ARRAY).data
+#define std_end(ARRAY) ((ARRAY).data + (ARRAY).size)
+#define std_back(ARRAY) (std_end(ARRAY) - 1)
+
+#define std_swap(ITER1, ITER2) *(ITER1) ^= *(ITER2) ^= *(ITER1) ^= *(ITER2)
+
+#define foreach(ARRAY) for(__typeof__((ARRAY).data[0])* it = std_begin(ARRAY);\
+it < std_end(ARRAY);\
 it++)
+
 
 // types (std)
 #ifndef STD_ARRAY_DONT_USE_PREDEFINED_TYPES
@@ -86,6 +94,8 @@ ARRAYS(uint8_t)
 ARRAYS(uint16_t)
 ARRAYS(uint32_t)
 ARRAYS(uint64_t)
+
+ARRAYS(bool)
 
 #endif
 

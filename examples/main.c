@@ -2,17 +2,40 @@
 #include "array.h"
 #include "pair.h"
 
-PAIRS(char, int)
-ARRAYS(std_pair(char, int))
+void bubble_sort(std_array(int)* arr){
+    bool sorted = false;
 
-int main(){
-    std_array(std_pair(char, int)) arr;
-    arr.size = 2;
+    while(!sorted){
+        sorted = true;
+    
+        foreach((*arr)){
+            if(it != std_back(*arr)){
+                auto next = it + 1;
 
-    foreach(arr){
-        *it = std_make_pair(char, int)('1', 1);
-        printf("(%c, %d)\n", it->first, it->second);
+                if(*next < *it){
+                    std_swap(next, it);
+                    sorted = false;
+                }
+            }
+        }
     }
+}
+
+int main()
+{
+    std_array(int) arr;
+
+    // init
+    arr.size = 20;
+    foreach(arr)
+        *it = rand() % 10;
+    
+    // sort
+    bubble_sort(&arr);
+
+    // output
+    foreach(arr)
+        printf("%d\n", *it);
 
     return 0;
 }
