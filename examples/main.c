@@ -29,5 +29,8 @@ int main()
 
     printf("backed %d\n", backed);
 
+    // free
+    b.clear(&b);
+
     return 0;
 }
