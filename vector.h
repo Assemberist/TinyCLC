@@ -5,7 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef STD_VECTOR_CAPACITY_GROW
 #define STD_VECTOR_CAPACITY_GROW 1.618
+#endif
 
 #ifndef auto
 #define auto __auto_type

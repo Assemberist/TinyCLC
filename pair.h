@@ -28,4 +28,4 @@ std_pair(T1, T2) _cat(_make, std_pair(T1, T2))(T1 first, T2 second){\
 }
 
 // methods
-#define std_make_pair(T1, T2) _make(std_pair(T1, T2))
+#define std_make_pair(T1, T2) _cat(_make, std_pair(T1, T2))
