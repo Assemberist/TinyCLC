@@ -1,5 +1,4 @@
 #pragma once
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -12,26 +11,66 @@
 #define auto __auto_type
 #endif
 
-// macros
+// definitions
 #define _std_array(T) _std_array_##T
 #define std_array(T) _std_array(T)
+
+#ifndef __cat
+#define __cat(X, Y) X##Y
+#endif
+
+#ifndef _cat
+#define _cat(X, Y) __cat(X, Y)
+#endif
+
 
 #define ARRAYS(T) typedef struct std_array(T){\
     size_t size;\
     T data[STD_ARRAY_MAX_SIZE];\
-} std_array(T);
+    T* (*begin)(struct std_array(T)*);\
+    T* (*end)(struct std_array(T)*);\
+    T* (*back)(struct std_array(T)*);\
+} std_array(T);\
+T* _cat(_begin, std_array(T))(std_array(T)* arr){\
+    return arr->data;\
+}\
+T* _cat(_end, std_array(T))(std_array(T)* arr){\
+    return arr->data + arr->size;\
+}\
+T* _cat(_back, std_array(T))(std_array(T)* arr){\
+    return arr->data + arr->size - 1;\
+}
 
+// methods
+#ifndef std_begin
+#define std_begin(CONTAINER) (CONTAINER).begin(&CONTAINER)
+#endif
 
-#define std_begin(ARRAY) (ARRAY).data
-#define std_end(ARRAY) ((ARRAY).data + (ARRAY).size)
-#define std_back(ARRAY) (std_end(ARRAY) - 1)
+#ifndef std_end
+#define std_end(CONTAINER) (CONTAINER).end(&CONTAINER)
+#endif
 
+#ifndef std_back
+#define std_back(CONTAINER) (CONTAINER).back(&CONTAINER)
+#endif
+
+#ifndef std_swap
 #define std_swap(ITER1, ITER2) *(ITER1) ^= *(ITER2) ^= *(ITER1) ^= *(ITER2)
+#endif
 
-#define foreach(ARRAY) for(__typeof__((ARRAY).data[0])* it = std_begin(ARRAY);\
-it < std_end(ARRAY);\
+#ifndef foreach
+#define foreach(CONTAINER) for(__typeof__(std_begin(CONTAINER)) it = std_begin(CONTAINER);\
+it < std_end(CONTAINER);\
 it++)
+#endif
 
+
+#define std_array_default(T) {\
+    .size = 0, \
+    .begin =_cat(_begin, std_array(T)), \
+    .end = _cat(_end, std_array(T)), \
+    .back = _cat(_back, std_array(T))\
+}
 
 // types (std)
 #ifndef STD_ARRAY_DONT_USE_PREDEFINED_TYPES
@@ -98,5 +137,3 @@ ARRAYS(uint64_t)
 ARRAYS(bool)
 
 #endif
-
-// methods

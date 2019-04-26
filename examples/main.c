@@ -1,41 +1,33 @@
 #include <stdio.h>
 #include "array.h"
-#include "pair.h"
+#include "vector.h"
 
-void bubble_sort(std_array(int)* arr){
-    bool sorted = false;
-
-    while(!sorted){
-        sorted = true;
-    
-        foreach(*arr){
-            if(it != std_back(*arr)){
-                auto next = it + 1;
-
-                if(*next < *it){
-                    std_swap(next, it);
-                    sorted = false;
-                }
-            }
-        }
-    }
-}
 
 int main()
 {
-    std_array(int) arr;
+    std_array(int) a = std_array_default(int);
+    std_vector(int) b = std_vector_default(int);
 
     // init
-    arr.size = 20;
-    foreach(arr)
-        *it = rand() % 10;
-    
-    // sort
-    bubble_sort(&arr);
+    a.size = 5;
+    b.reserve(&b, 5);
 
-    // output
-    foreach(arr)
-        printf("%d\n", *it);
+    // fill
+    foreach(a) *it = 5;
+    foreach(b) *it = 5;
+
+    b.push_back(&b, 4);
+    b.push_back(&b, 7);
+    int backed = b.pop_back(&b);
+
+    //output
+    foreach(a) printf("%d ", *it);
+    puts("");
+
+    foreach(b) printf("%d ", *it);
+    puts("");
+
+    printf("backed %d\n", backed);
 
     return 0;
 }
