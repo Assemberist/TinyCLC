@@ -1,10 +1,12 @@
 #pragma once
+#include <stdlib.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #ifndef STD_ARRAY_MAX_SIZE
-#define STD_ARRAY_MAX_SIZE 256
+#define STD_ARRAY_MAX_SIZE 128
 #endif
 
 #ifndef auto
@@ -25,20 +27,32 @@
 
 
 #define ARRAYS(T) typedef struct std_array(T){\
-    size_t size;\
+    size_t _size;\
     T data[STD_ARRAY_MAX_SIZE];\
+    size_t (*size)(struct std_array(T)*);\
+    T* (*at)(struct std_array(T)*, size_t);\
     T* (*begin)(struct std_array(T)*);\
     T* (*end)(struct std_array(T)*);\
     T* (*back)(struct std_array(T)*);\
 } std_array(T);\
+size_t _cat(_size, std_array(T))(std_array(T)* arr){\
+    return arr->_size;\
+}\
+T* _cat(_at, std_array(T))(std_array(T)* arr, size_t index){\
+    if(index >= arr->_size){\
+        fprintf(stderr, "std::array [at]: index %d is out of bounds\n", index);\
+        exit(EXIT_FAILURE);\
+    }\
+    return &arr->data[index];\
+}\
 T* _cat(_begin, std_array(T))(std_array(T)* arr){\
     return arr->data;\
 }\
 T* _cat(_end, std_array(T))(std_array(T)* arr){\
-    return arr->data + arr->size;\
+    return arr->data + arr->_size;\
 }\
 T* _cat(_back, std_array(T))(std_array(T)* arr){\
-    return arr->data + arr->size - 1;\
+    return arr->data + arr->_size - 1;\
 }
 
 // methods
@@ -65,9 +79,11 @@ it++)
 #endif
 
 
-#define std_array_default(T) {\
-    .size = 0, \
-    .begin =_cat(_begin, std_array(T)), \
+#define std_array_default(T, SIZE) {\
+    ._size = SIZE, \
+    .size =  _cat(_size, std_array(T)), \
+    .at = _cat(_at, std_array(T)), \
+    .begin = _cat(_begin, std_array(T)), \
     .end = _cat(_end, std_array(T)), \
     .back = _cat(_back, std_array(T))\
 }
