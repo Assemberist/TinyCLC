@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define STD_VECTOR_CAPACITY_GROW 1.618
+
 #ifndef auto
 #define auto __auto_type
 #endif
@@ -23,12 +25,14 @@
 
 
 #define VECTORS(T) typedef struct std_vector(T){\
-    size_t _size;\
+    size_t _size, _capacity;\
     T* _data;\
     void (*reserve)(struct std_vector(T)*, size_t);\
+    void (*destroy)(struct std_vector(T)*);\
     void (*clear)(struct std_vector(T)*);\
     T* (*at)(struct std_vector(T)*, size_t);\
     size_t (*size)(struct std_vector(T)*);\
+    size_t (*capacity)(struct std_vector(T)*);\
     const T*(*data)(struct std_vector(T)*);\
     T* (*begin)(struct std_vector(T)*);\
     T* (*end)(struct std_vector(T)*);\
@@ -37,13 +41,17 @@
     T (*pop_back)(struct std_vector(T)*);\
 } std_vector(T);\
 void _cat(_reserve, std_vector(T))(std_vector(T)* vec, size_t size){\
-    vec->_size = size;\
+    vec->_capacity = size;\
     vec->_data = malloc(size * sizeof(T));\
 }\
-void _cat(_clear, std_vector(T))(std_vector(T)* vec){\
+void _cat(_destroy, std_vector(T))(std_vector(T)* vec){\
+    vec->_capacity = 0;\
     vec->_size = 0;\
     free(vec->_data);\
     vec->_data = NULL;\
+}\
+void _cat(_clear, std_vector(T))(std_vector(T)* vec){\
+    vec->_size = 0;\
 }\
 T* _cat(_at, std_vector(T))(std_vector(T)* vec, size_t index){\
     if(index >= vec->_size){\
@@ -54,6 +62,9 @@ T* _cat(_at, std_vector(T))(std_vector(T)* vec, size_t index){\
 }\
 size_t _cat(_size, std_vector(T))(std_vector(T)* vec){\
     return vec->_size;\
+}\
+size_t _cat(_capacity, std_vector(T))(std_vector(T)* vec){\
+    return vec->_capacity;\
 }\
 const T* _cat(_data, std_vector(T))(std_vector(T)* vec){\
     return vec->_data;\
@@ -69,13 +80,15 @@ T* _cat(_back, std_vector(T))(std_vector(T)* vec){\
 }\
 void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
     vec->_size++;\
-    vec->_data = realloc(vec->_data, vec->_size * sizeof(T));\
+    if(vec->_size > vec->_capacity){\
+        vec->_capacity *= STD_VECTOR_CAPACITY_GROW;\
+        vec->_data = realloc(vec->_data, vec->_capacity * sizeof(T));\
+    }\
     *vec->back(vec) = value;\
 }\
 T _cat(_pop_back, std_vector(T))(std_vector(T)* vec){\
     T result = *vec->back(vec);\
     vec->_size--;\
-    vec->_data = realloc(vec->_data, vec->_size * sizeof(T));\
     return result;\
 }
 
@@ -103,11 +116,13 @@ it++)
 #endif
 
 #define std_vector_default(T) {\
-    0, NULL, \
+    0, 0, NULL, \
     _cat(_reserve, std_vector(T)), \
+    _cat(_destroy, std_vector(T)), \
     _cat(_clear, std_vector(T)), \
     _cat(_at, std_vector(T)), \
     _cat(_size, std_vector(T)), \
+    _cat(_capacity, std_vector(T)), \
     _cat(_data, std_vector(T)), \
     _cat(_begin, std_vector(T)), \
     _cat(_end, std_vector(T)), \
