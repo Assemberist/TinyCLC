@@ -45,6 +45,8 @@
 void _cat(_reserve, std_vector(T))(std_vector(T)* vec, size_t size){\
     vec->_capacity = size;\
     vec->_data = malloc(size * sizeof(T));\
+    if(!vec->_data)\
+        fprintf(stderr, "std::vector [malloc]: not enough memory\n");\
 }\
 void _cat(_destroy, std_vector(T))(std_vector(T)* vec){\
     vec->_capacity = 0;\
@@ -86,6 +88,8 @@ void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
     if(vec->_size > vec->_capacity){\
         vec->_capacity *= STD_VECTOR_CAPACITY_GROW;\
         vec->_data = realloc(vec->_data, vec->_capacity * sizeof(T));\
+        if(!vec->_data)\
+            fprintf(stderr, "std::vector [realloc]: not enough memory\n");\
     }\
     *vec->back(vec) = value;\
 }\
