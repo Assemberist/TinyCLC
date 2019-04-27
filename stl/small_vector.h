@@ -105,7 +105,7 @@ it++)
 #endif
 
 
-#define construct_std_small_vector(T) {\
+#define std_small_vector_default(T) (std_small_vector(T)){\
     ._size = 0, \
     .clear = _cat(_clear, std_small_vector(T)), \
     .size = _cat(_size, std_small_vector(T)), \

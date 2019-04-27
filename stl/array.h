@@ -82,7 +82,7 @@ it++)
 #endif
 
 
-#define construct_std_array(T, SIZE) {\
+#define std_array_default(T, SIZE) (std_array(T)){\
     ._size = SIZE, \
     .size =  _cat(_size, std_array(T)), \
     .at = _cat(_at, std_array(T)), \

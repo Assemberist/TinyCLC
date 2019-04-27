@@ -129,7 +129,7 @@ it < std_end(CONTAINER);\
 it++)
 #endif
 
-#define construct_std_vector(T) {\
+#define std_vector_default(T) (std_vector(T)){\
     0, 0, NULL, \
     _cat(_reserve, std_vector(T)), \
     _cat(_destruct, std_vector(T)), \
