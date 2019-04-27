@@ -30,12 +30,12 @@
     size_t _size, _capacity;\
     T* _data;\
     void (*reserve)(struct std_vector(T)*, size_t);\
-    void (*destroy)(struct std_vector(T)*);\
+    void (*destruct)(struct std_vector(T)*);\
     void (*clear)(struct std_vector(T)*);\
-    T* (*at)(struct std_vector(T)*, size_t);\
     size_t (*size)(struct std_vector(T)*);\
     size_t (*capacity)(struct std_vector(T)*);\
     const T*(*data)(struct std_vector(T)*);\
+    T* (*at)(struct std_vector(T)*, size_t);\
     T* (*begin)(struct std_vector(T)*);\
     T* (*end)(struct std_vector(T)*);\
     T* (*back)(struct std_vector(T)*);\
@@ -45,10 +45,12 @@
 void _cat(_reserve, std_vector(T))(std_vector(T)* vec, size_t size){\
     vec->_capacity = size;\
     vec->_data = malloc(size * sizeof(T));\
-    if(!vec->_data)\
+    if(!vec->_data){\
         fprintf(stderr, "std::vector [malloc]: not enough memory\n");\
+        exit(EXIT_FAILURE);\
+    }\
 }\
-void _cat(_destroy, std_vector(T))(std_vector(T)* vec){\
+void _cat(_destruct, std_vector(T))(std_vector(T)* vec){\
     vec->_capacity = 0;\
     vec->_size = 0;\
     free(vec->_data);\
@@ -88,8 +90,10 @@ void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
     if(vec->_size > vec->_capacity){\
         vec->_capacity *= STD_VECTOR_CAPACITY_GROW;\
         vec->_data = realloc(vec->_data, vec->_capacity * sizeof(T));\
-        if(!vec->_data)\
+        if(!vec->_data){\
             fprintf(stderr, "std::vector [realloc]: not enough memory\n");\
+            exit(EXIT_FAILURE);\
+        }\
     }\
     *vec->back(vec) = value;\
 }\
@@ -101,15 +105,15 @@ T _cat(_pop_back, std_vector(T))(std_vector(T)* vec){\
 
 // methods
 #ifndef std_begin
-#define std_begin(CONTAINER) (CONTAINER).begin(&CONTAINER)
+#define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
 #endif
 
 #ifndef std_end
-#define std_end(CONTAINER) (CONTAINER).end(&CONTAINER)
+#define std_end(CONTAINER) (CONTAINER).end(&(CONTAINER))
 #endif
 
 #ifndef std_back
-#define std_back(CONTAINER) (CONTAINER).back(&CONTAINER)
+#define std_back(CONTAINER) (CONTAINER).back(&(CONTAINER))
 #endif
 
 #ifndef std_swap
@@ -122,15 +126,15 @@ it < std_end(CONTAINER);\
 it++)
 #endif
 
-#define std_vector_default(T) {\
+#define construct_std_vector(T) {\
     0, 0, NULL, \
     _cat(_reserve, std_vector(T)), \
-    _cat(_destroy, std_vector(T)), \
+    _cat(_destruct, std_vector(T)), \
     _cat(_clear, std_vector(T)), \
-    _cat(_at, std_vector(T)), \
     _cat(_size, std_vector(T)), \
     _cat(_capacity, std_vector(T)), \
     _cat(_data, std_vector(T)), \
+    _cat(_at, std_vector(T)), \
     _cat(_begin, std_vector(T)), \
     _cat(_end, std_vector(T)), \
     _cat(_back, std_vector(T)), \

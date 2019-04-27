@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gcc -g -std=c11 -I ../ main.c
+gcc -g -std=c11 -I ../ -I ../stl main.c

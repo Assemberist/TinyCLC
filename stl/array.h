@@ -57,15 +57,15 @@ T* _cat(_back, std_array(T))(std_array(T)* arr){\
 
 // methods
 #ifndef std_begin
-#define std_begin(CONTAINER) (CONTAINER).begin(&CONTAINER)
+#define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
 #endif
 
 #ifndef std_end
-#define std_end(CONTAINER) (CONTAINER).end(&CONTAINER)
+#define std_end(CONTAINER) (CONTAINER).end(&(CONTAINER))
 #endif
 
 #ifndef std_back
-#define std_back(CONTAINER) (CONTAINER).back(&CONTAINER)
+#define std_back(CONTAINER) (CONTAINER).back(&(CONTAINER))
 #endif
 
 #ifndef std_swap
@@ -79,7 +79,7 @@ it++)
 #endif
 
 
-#define std_array_default(T, SIZE) {\
+#define construct_std_array(T, SIZE) {\
     ._size = SIZE, \
     .size =  _cat(_size, std_array(T)), \
     .at = _cat(_at, std_array(T)), \
