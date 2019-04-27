@@ -44,7 +44,7 @@
 } std_vector(T);\
 typedef __typeof__(((std_vector(T)*)0)->begin(NULL)) _cat(_iter, std_vector(T));\
 void _cat(_reserve, std_vector(T))(std_vector(T)* vec, size_t size){\
-    vec->_capacity = size;\
+    vec->_capacity = size > 1 ? size : 2;\
     vec->_data = malloc(size * sizeof(T));\
     if(!vec->_data){\
         fprintf(stderr, "std::vector [malloc]: not enough memory\n");\
