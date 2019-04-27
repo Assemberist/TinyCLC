@@ -35,6 +35,7 @@
     T* (*end)(struct std_array(T)*);\
     T* (*back)(struct std_array(T)*);\
 } std_array(T);\
+typedef __typeof__(((std_array(T)*)0)->begin(NULL)) _cat(_iter, std_array(T));\
 size_t _cat(_size, std_array(T))(std_array(T)* arr){\
     return arr->_size;\
 }\
@@ -56,6 +57,8 @@ T* _cat(_back, std_array(T))(std_array(T)* arr){\
 }
 
 // methods
+#define std_array_iterator(T) _cat(_iter, std_array(T))
+
 #ifndef std_begin
 #define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
 #endif

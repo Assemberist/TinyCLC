@@ -39,6 +39,7 @@
     void (*push_back)(struct std_small_vector(T)*, T);\
     T (*pop_back)(struct std_small_vector(T)*);\
 } std_small_vector(T);\
+typedef __typeof__(((std_small_vector(T)*)0)->begin(NULL)) _cat(_iter, std_small_vector(T));\
 void _cat(_clear, std_small_vector(T))(std_small_vector(T)* svec){\
     svec->_size = 0;\
 }\
@@ -79,6 +80,8 @@ T _cat(_pop_back, std_small_vector(T))(std_small_vector(T)* svec){\
 }
 
 // methods
+#define std_small_vector_iterator(T) _cat(_iter, std_small_vector(T))
+
 #ifndef std_begin
 #define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
 #endif
