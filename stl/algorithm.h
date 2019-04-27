@@ -35,7 +35,7 @@
 
 
 #define ALGOS(T)\
-_cat(_iter, T) _cat(_std_for_each, T)(_cat(_iter, T) begin, _cat(_iter, T) end, void (*func)(_cat(_iter, T) it)){\
+void _cat(_std_for_each, T)(_cat(_iter, T) begin, _cat(_iter, T) end, void (*func)(_cat(_iter, T) it)){\
     for(_cat(_iter, T) it = begin; it < end; it++) func(it);\
 }
 

@@ -1,16 +1,21 @@
 #include <stdio.h>
-#include "vector.h"
+#include "array.h"
+#include "algorithm.h"
+
+void foo(std_array_iterator(int) it){
+    *it = rand() % 10;
+}
+
+ALGOS(std_array(int))
 
 int main()
 {
-    std_vector(int) vec = construct_std_vector(int);
+    std_array(int) a = construct_std_array(int, 5);
 
-    for(size_t i = 0; i < 100; i++){
-        vec.push_back(&vec, 0);
-        printf("size: %d capacity: %d\n", vec.size(&vec), vec.capacity(&vec));
-    }
+    std_for_each(std_array(int))(std_begin(a), std_end(a), foo);
 
-    vec.destruct(&vec);
+    foreach(a)
+        printf("%d\n", *it);
 
     return 0;
 }
