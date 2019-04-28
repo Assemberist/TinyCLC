@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #ifndef STD_ARRAY_MAX_SIZE
-#define STD_ARRAY_MAX_SIZE 128
+#define STD_ARRAY_MAX_SIZE 256
 #endif
 
 #ifndef auto

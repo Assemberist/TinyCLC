@@ -21,10 +21,7 @@
     T2 second;\
 } std_pair(T1, T2);\
 std_pair(T1, T2) _cat(_make, std_pair(T1, T2))(T1 first, T2 second){\
-    std_pair(T1, T2) result;\
-    result.first = first;\
-    result.second = second;\
-    return result;\
+    return (std_pair(T1, T2)){first, second};\
 }
 
 // methods

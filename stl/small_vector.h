@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #ifndef STD_SMALL_VECTOR_MAX_SIZE
-#define STD_SMALL_VECTOR_MAX_SIZE 128
+#define STD_SMALL_VECTOR_MAX_SIZE 256
 #endif
 
 #ifndef auto
@@ -39,7 +39,7 @@
     void (*push_back)(struct std_small_vector(T)*, T);\
     T (*pop_back)(struct std_small_vector(T)*);\
 } std_small_vector(T);\
-typedef __typeof__(((std_small_vector(T)*)0)->begin(NULL)) _cat(_iter, std_small_vector(T));\
+typedef T* _cat(_iter, std_small_vector(T));\
 void _cat(_clear, std_small_vector(T))(std_small_vector(T)* svec){\
     svec->_size = 0;\
 }\
