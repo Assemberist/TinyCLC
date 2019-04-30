@@ -27,10 +27,16 @@ typedef struct RdVertex3f{
     float x, y, z, color;
 } RdVertex3f;
 
+typedef struct RdViewport{
+    float h, w, d;
+} RdViewport;
+
 typedef struct RdScreen{
     size_t h, w, total;
+    RdViewport* viewport;    
     char* buffer;
 } RdScreen;
+
 
 typedef struct RdScreenPoint{
     size_t x, y;
@@ -42,6 +48,33 @@ typedef struct RdScreenPoint{
 // http://mewbies.com/geek_fun_files/ascii/ascii_art_light_scale_and_gray_scale_chart.htm
 static char _rdColorBlackBack[] = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 static char _rdColorWhiteBack[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+
+/////////////////////////////////////////////////////
+//                      UTILS
+/////////////////////////////////////////////////////
+float rdAsciiToColorf(char ascii){
+    #ifndef RD_WHITE_BACK
+    float _color = (float)(strchr(_rdColorBlackBack, ascii) - _rdColorBlackBack) / 69.0f;
+    #else
+    float _color = (float)(strchr(_rdColorWhiteBack, ascii) - _rdColorWhiteBack) / 69.0f;
+    #endif
+
+    return _color;
+}
+
+char _rdGetColorf(float color){
+    RD_NORMALIZED_FLOAT_MIN_ZERO(color)
+
+    #ifndef RD_WHITE_BACK
+    char _color = _rdColorBlackBack[(size_t)(color * 69)];
+    #else
+    char _color = _rdColorWhiteBack[(size_t)(color * 69)];
+    #endif
+
+    return _color;
+}
+
+
 
 /////////////////////////////////////////////////////
 //                      SCREEN
@@ -73,36 +106,24 @@ RdScreenPoint _rdGetScreenPoint2f(float x, float y, RdScreen* screen){
     
     return (RdScreenPoint){_x, _y};
 }
+RdScreenPoint _rdGetScreenPoint3f(float x, float y, float z, RdScreen* screen){
+    float c = screen->viewport->d / z;
+    x /= c;
+    y /= c;
 
-void _rdSetScreenPoint2f(RdScreenPoint* p, float color, RdScreen* screen){
+    size_t _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
+    size_t _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
+
+    if(_x == screen->w) _x--;
+    if(_y == screen->h) _y--;
+    
+    return (RdScreenPoint){_x, _y};
+}
+
+void _rdSetScreenPoint(RdScreenPoint* p, float color, RdScreen* screen){
     char* offset = _rdGetBufferOffset(p, screen);
     if(offset != 0) 
         *offset = _rdGetColorf(color);
-}
-
-/////////////////////////////////////////////////////
-//                      UTILS
-/////////////////////////////////////////////////////
-float rdAsciiToColorf(char ascii){
-    #ifndef RD_WHITE_BACK
-    float _color = (float)(strchr(_rdColorBlackBack, ascii) - _rdColorBlackBack) / 69.0f;
-    #else
-    float _color = (float)(strchr(_rdColorWhiteBack, ascii) - _rdColorWhiteBack) / 69.0f;
-    #endif
-
-    return _color;
-}
-
-char _rdGetColorf(float color){
-    RD_NORMALIZED_FLOAT_MIN_ZERO(color)
-
-    #ifndef RD_WHITE_BACK
-    char _color = _rdColorBlackBack[(size_t)(color * 69)];
-    #else
-    char _color = _rdColorWhiteBack[(size_t)(color * 69)];
-    #endif
-
-    return _color;
 }
 
 
@@ -136,7 +157,7 @@ void rdRender(RdScreen* screen){
 // single
 void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
     RdScreenPoint p = _rdGetScreenPoint2f(v->x, v->y, screen);
-    _rdSetScreenPoint2f(&p, v->color, screen);
+    _rdSetScreenPoint(&p, v->color, screen);
 
     #ifdef RD_DEBUG
     printf("thread: %d vertex: (%f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, p.x, p.y);
@@ -144,8 +165,8 @@ void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
 }
 void rdPoint3f(RdVertex3f* v, RdScreen* screen){
     if(v->z > 0){
-        RdScreenPoint p = _rdGetScreenPoint2f(v->x / v->z, v->y / v->z, screen);
-        _rdSetScreenPoint2f(&p, v->color, screen);
+        RdScreenPoint p = _rdGetScreenPoint3f(v->x, v->y, v->z, screen);
+        _rdSetScreenPoint(&p, v->color, screen);
 
         #ifdef RD_DEBUG
         printf("thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);

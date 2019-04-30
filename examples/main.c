@@ -5,8 +5,11 @@ int main(int argc, char* argv[]){
     // RdScreen window = rdCreateScreen(atol(argv[1]), atol(argv[2]));
     RdScreen window = rdCreateScreen(33, 13);
 
+    RdViewport view = {1.0f, 1.0f, 1.0f};
+    window.viewport = &view;
+
     RdVertex2f v0 = {0.5f, 0.5f, 1.0f};
-    RdVertex3f v1 = {0.5f, 0.5f, 1.5f, 1.0f};
+    RdVertex3f v1 = {0.0f, 0.0f, 1.0f, 1.0f};
     
     rdClear(&window);
     rdPoint2f(&v0, &window);
