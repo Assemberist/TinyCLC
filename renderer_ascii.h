@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 #include <omp.h>
 
 #define RD_NORMALIZED_FLOAT(X) if(X < -1.0f) X = -1.0f;\
@@ -17,7 +18,7 @@ else if(X > 1.0f) X = 1.0f;
 #define RD_SHOW_GRID
 // #define RD_WHITE_BACK
 
-typedef enum {LINES, LINE_STRIP, LINE_LOOP} RD_LINES;
+typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINE_FULL} RD_LINES;
 
 typedef struct RdVertex2f{
     float x, y, color;
@@ -74,6 +75,10 @@ char _rdGetColorf(float color){
     return _color;
 }
 
+float maxf(float x, float y){
+    return x > y ? x : y;
+}
+
 
 
 /////////////////////////////////////////////////////
@@ -108,8 +113,8 @@ RdScreenPoint _rdGetScreenPoint2f(float x, float y, RdScreen* screen){
 }
 RdScreenPoint _rdGetScreenPoint3f(float x, float y, float z, RdScreen* screen){
     float c = screen->viewport->d / z;
-    x /= c;
-    y /= c;
+    x *= c;
+    y *= c;
 
     size_t _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
     size_t _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
@@ -150,8 +155,29 @@ void rdClear(RdScreen* screen){
 void rdRender(RdScreen* screen){
     printf("\e[1;1H\e[2J");
 
-    for(size_t i = 0; i < screen->h; i++)
-        printf("%.*s\n", screen->w, screen->buffer + i * screen->w);
+    for(size_t i = 0; i < screen->h; i++){
+        for(size_t j = 0; j < screen->w; j++)
+            printf("%c ", screen->buffer[i * screen->w + j]);
+        puts("");
+    }
+}
+
+// hidden
+void _rdLine(RdScreenPoint* p0, RdScreenPoint* p1, float color0, float color1, RdScreen* screen){
+    int dx = (int)p1->x - (int)p0->x;
+    int dy = (int)p0->y - (int)p1->y;
+    size_t max = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
+
+    float step_x = (float)dx / max;
+    float step_y = (float)dy / max;
+
+    float step_color = (color1 - color0) / max;
+
+    #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i <= max; i++){
+        RdScreenPoint p = {p0->x + i * step_x, p0->y - i * step_y};
+        _rdSetScreenPoint(&p, color0 + i * step_color, screen);
+    }
 }
 
 // single
@@ -160,7 +186,7 @@ void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
     _rdSetScreenPoint(&p, v->color, screen);
 
     #ifdef RD_DEBUG
-    printf("thread: %d vertex: (%f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, p.x, p.y);
+    printf("[Point2f] thread: %d vertex: (%f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, p.x, p.y);
     #endif
 }
 void rdPoint3f(RdVertex3f* v, RdScreen* screen){
@@ -169,7 +195,7 @@ void rdPoint3f(RdVertex3f* v, RdScreen* screen){
         _rdSetScreenPoint(&p, v->color, screen);
 
         #ifdef RD_DEBUG
-        printf("thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);
+        printf("[Point3f] thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);
         #endif
     }
 }
@@ -178,29 +204,24 @@ void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdScreen* screen){
     RdScreenPoint p0 = _rdGetScreenPoint2f(v0->x, v0->y, screen);
     RdScreenPoint p1 = _rdGetScreenPoint2f(v1->x, v1->y, screen);
    
-    int diff_x = v1->x - v0->x;
-    int diff_y = v1->y - v0->y;
-    float s = diff_y / diff_x;
-
-    int dx = (int)p1.x - (int)p0.x;
-    int dy = (int)p1.y - (int)p0.y;
-    size_t count = dx < dy ? dy : dx;
-
-    if(s == 1){
-        for(size_t i = 0; i < count; i++){
-
-        }
-    }else if(s < 1){
-
-    }else{
-
-    }
+    _rdLine(&p0, &p1, v0->color, v1->color, screen);
+}
+void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
+    RdScreenPoint p0 = _rdGetScreenPoint3f(v0->x, v0->y, v0->z, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint3f(v1->x, v1->y, v1->z, screen);
+   
+    _rdLine(&p0, &p1, v0->color, v1->color, screen);
 }
 
 // multiple
 void rdPoints2f(RdVertex2f* v, size_t count, RdScreen* screen){
     #pragma omp parallel for schedule(guided)
     for(size_t i = 0; i < count; i++) rdPoint2f(v + i, screen);
+}
+
+void rdPoints3f(RdVertex3f* v, size_t count, RdScreen* screen){
+    #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < count; i++) rdPoint3f(v + i, screen);
 }
 
 void rdLines2f(RdVertex2f* v, size_t count, RdScreen* screen, RD_LINES option){
@@ -210,13 +231,36 @@ void rdLines2f(RdVertex2f* v, size_t count, RdScreen* screen, RD_LINES option){
     }else if(option == LINE_STRIP){
         for(size_t i = 0; i < count - 1; i++)
             rdLine2f(v + i, v + i + 1, screen);
-    }
-    else if(option == LINE_LOOP){
+    }else if(option == LINE_LOOP){
         for(size_t i = 0; i < count; i++){
             if(i < count - 1)
                 rdLine2f(v + i, v + i + 1, screen);
             else
                 rdLine2f(v + i, v, screen);
         }
+    }else if(option == LINE_FULL){
+        for(size_t i = 0; i < count; i++)
+            for(size_t j = 0; j < count; j++)
+                if(i != j) rdLine2f(v + i, v + j, screen);
+    }
+}
+void rdLines3f(RdVertex3f* v, size_t count, RdScreen* screen, RD_LINES option){
+    if(option == LINES){
+        for(size_t i = 0; i < count; i += 2)
+            rdLine3f(v + i, v + i + 1, screen);
+    }else if(option == LINE_STRIP){
+        for(size_t i = 0; i < count - 1; i++)
+            rdLine3f(v + i, v + i + 1, screen);
+    }else if(option == LINE_LOOP){
+        for(size_t i = 0; i < count; i++){
+            if(i < count - 1)
+                rdLine3f(v + i, v + i + 1, screen);
+            else
+                rdLine3f(v + i, v, screen);
+        }
+    }else if(option == LINE_FULL){
+        for(size_t i = 0; i < count; i++)
+            for(size_t j = 0; j < count; j++)
+                if(i != j) rdLine3f(v + i, v + j, screen);
     }
 }
