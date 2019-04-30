@@ -18,7 +18,7 @@ else if(X > 1.0f) X = 1.0f;
 #define RD_SHOW_GRID
 // #define RD_WHITE_BACK
 
-typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINE_FULL} RD_LINES;
+typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINES_FULL} RD_LINES;
 
 typedef struct RdVertex2f{
     float x, y, color;
@@ -155,11 +155,8 @@ void rdClear(RdScreen* screen){
 void rdRender(RdScreen* screen){
     printf("\e[1;1H\e[2J");
 
-    for(size_t i = 0; i < screen->h; i++){
-        for(size_t j = 0; j < screen->w; j++)
-            printf("%c ", screen->buffer[i * screen->w + j]);
-        puts("");
-    }
+    for(size_t i = 0; i < screen->h; i++)
+            printf("%.*s\n", screen->w, screen->buffer + i * screen->w);
 }
 
 // hidden
@@ -238,7 +235,7 @@ void rdLines2f(RdVertex2f* v, size_t count, RdScreen* screen, RD_LINES option){
             else
                 rdLine2f(v + i, v, screen);
         }
-    }else if(option == LINE_FULL){
+    }else if(option == LINES_FULL){
         for(size_t i = 0; i < count; i++)
             for(size_t j = 0; j < count; j++)
                 if(i != j) rdLine2f(v + i, v + j, screen);
@@ -258,7 +255,7 @@ void rdLines3f(RdVertex3f* v, size_t count, RdScreen* screen, RD_LINES option){
             else
                 rdLine3f(v + i, v, screen);
         }
-    }else if(option == LINE_FULL){
+    }else if(option == LINES_FULL){
         for(size_t i = 0; i < count; i++)
             for(size_t j = 0; j < count; j++)
                 if(i != j) rdLine3f(v + i, v + j, screen);
