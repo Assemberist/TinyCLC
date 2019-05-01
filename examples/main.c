@@ -28,7 +28,9 @@ int main(int argc, char* argv[]){
 
     for(size_t i = 0; i < 8; i++) verts[i].x -= 0.75f;
 
-    while(1){
+    rdFlush(); // clear console
+
+    while(verts[0].x < 2.0f){
         for(size_t i = 0; i < 8; i++) verts[i].x += 0.005f;
 
         rdClear(&window);
@@ -46,11 +48,12 @@ int main(int argc, char* argv[]){
         rdLine3f(verts + 2, verts + 6, &window);
         rdLine3f(verts + 3, verts + 7, &window);
 
-        rdRender(&window);
+        rdDRender(&window);
 
-        sleep(5);
+        sleep(2);
     }
 
+    rdFlush();
     rdDestroyScreen(&window);
     return 0;
 }

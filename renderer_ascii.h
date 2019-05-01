@@ -152,11 +152,20 @@ void rdClear(RdScreen* screen){
     #endif
 }
 
-void rdRender(RdScreen* screen){
+void rdFlush(){
     printf("\e[1;1H\e[2J");
+}
 
+void rdRender(RdScreen* screen){
     for(size_t i = 0; i < screen->h; i++)
             printf("%.*s\n", screen->w, screen->buffer + i * screen->w);
+}
+void rdDRender(RdScreen* screen){
+    printf("\e[?25l"); // disable cursor
+    for(size_t i = 0; i < screen->h; i++)
+            printf("%.*s\n", screen->w, screen->buffer + i * screen->w);
+    printf("\e[%dA", screen->h); // go up
+    printf("\e[?25h"); // enable cursor
 }
 
 // hidden
