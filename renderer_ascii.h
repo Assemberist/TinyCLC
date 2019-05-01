@@ -204,6 +204,12 @@ RdScreen rdCreateScreen(size_t w, size_t h){
     return result;
 }
 
+RdViewport rdCreateViewportIdentity(RdScreen* screen){
+    float identity = (float)screen->w / screen->h;
+    RdViewport result = {1.0f, identity / 2.0f, 1.0f};
+    return result;
+}
+
 void rdDestroyScreen(RdScreen* screen){
     free(screen->buffer);
 }
