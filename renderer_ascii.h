@@ -15,10 +15,23 @@ else if(X > 1.0f) X = 1.0f;
 else if(X > 1.0f) X = 1.0f;
 
 // #define RD_DEBUG
-#define RD_SHOW_GRID
+// #define RD_SHOW_GRID
 // #define RD_WHITE_BACK
 
 typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINES_FULL} RD_LINES;
+
+float rdTranslate3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+float rdRotateY3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
 
 typedef struct RdVertex2f{
     float x, y, color;
@@ -79,6 +92,62 @@ float maxf(float x, float y){
     return x > y ? x : y;
 }
 
+void rdSetTranslate3f(float x, float y, float z){
+    rdTranslate3f[0][0] = 1.0f;
+    rdTranslate3f[0][1] = 0.0f;
+    rdTranslate3f[0][2] = 0.0f;
+    rdTranslate3f[0][3] = x;
+
+    rdTranslate3f[1][0] = 0.0f;
+    rdTranslate3f[1][1] = 1.0f;
+    rdTranslate3f[1][2] = 0.0f;
+    rdTranslate3f[1][3] = y;
+
+    rdTranslate3f[2][0] = 0.0f;
+    rdTranslate3f[2][1] = 0.0f;
+    rdTranslate3f[2][2] = 1.0f;
+    rdTranslate3f[2][3] = z;
+
+    rdTranslate3f[3][0] = 0.0f;
+    rdTranslate3f[3][1] = 0.0f;
+    rdTranslate3f[3][2] = 0.0f;
+    rdTranslate3f[3][3] = 1.0f;
+}
+void rdSetRotateY3f(float angle){
+    float s = sinf(angle * 3.14f / 180.0f);
+    float c = cosf(angle * 3.14f / 180.0f);
+
+    rdRotateY3f[0][0] = c;
+    rdRotateY3f[0][1] = 0.0f;
+    rdRotateY3f[0][2] = s;
+    rdRotateY3f[0][3] = 0.0f;
+
+    rdRotateY3f[1][0] = 0.0f;
+    rdRotateY3f[1][1] = 1.0f;
+    rdRotateY3f[1][2] = 0.0f;
+    rdRotateY3f[1][3] = 0.0f;
+
+    rdRotateY3f[2][0] = -s;
+    rdRotateY3f[2][1] = 0.0f;
+    rdRotateY3f[2][2] = c;
+    rdRotateY3f[2][3] = 0.0f;
+
+    rdRotateY3f[3][0] = 0.0f;
+    rdRotateY3f[3][1] = 0.0f;
+    rdRotateY3f[3][2] = 0.0f;
+    rdRotateY3f[3][3] = 1.0f;
+}
+
+RdVertex3f rdMatMul3f(RdVertex3f* v, float mat[4][4]){
+    float x, y, z, w;
+
+    x = v->x * mat[0][0] + v->y * mat[0][1] + v->z * mat[0][2] + mat[0][3];
+    y = v->x * mat[1][0] + v->y * mat[1][1] + v->z * mat[1][2] + mat[1][3];
+    z = v->x * mat[2][0] + v->y * mat[2][1] + v->z * mat[2][2] + mat[2][3];
+    w = v->x * mat[3][0] + v->y * mat[3][1] + v->z * mat[3][2] + mat[3][3];
+
+    return (RdVertex3f){x, y, z, v->color};
+}
 
 
 /////////////////////////////////////////////////////
@@ -197,8 +266,11 @@ void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
 }
 void rdPoint3f(RdVertex3f* v, RdScreen* screen){
     if(v->z > 0){
-        RdScreenPoint p = _rdGetScreenPoint3f(v->x, v->y, v->z, screen);
-        _rdSetScreenPoint(&p, v->color, screen);
+        RdVertex3f new_v = rdMatMul3f(v, rdRotateY3f);
+        new_v = rdMatMul3f(&new_v, rdTranslate3f);
+
+        RdScreenPoint p = _rdGetScreenPoint3f(new_v.x, new_v.y, new_v.z, screen);
+        _rdSetScreenPoint(&p, new_v.color, screen);
 
         #ifdef RD_DEBUG
         printf("[Point3f] thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);
@@ -213,10 +285,16 @@ void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdScreen* screen){
     _rdLine(&p0, &p1, v0->color, v1->color, screen);
 }
 void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
-    RdScreenPoint p0 = _rdGetScreenPoint3f(v0->x, v0->y, v0->z, screen);
-    RdScreenPoint p1 = _rdGetScreenPoint3f(v1->x, v1->y, v1->z, screen);
+    RdVertex3f new_v0 = rdMatMul3f(v0, rdRotateY3f);
+    RdVertex3f new_v1 = rdMatMul3f(v1, rdRotateY3f);
+
+    new_v0 = rdMatMul3f(&new_v0, rdTranslate3f);
+    new_v1 = rdMatMul3f(&new_v1, rdTranslate3f);
+
+    RdScreenPoint p0 = _rdGetScreenPoint3f(new_v0.x, new_v0.y, new_v0.z, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint3f(new_v1.x, new_v1.y, new_v1.z, screen);
    
-    _rdLine(&p0, &p1, v0->color, v1->color, screen);
+    _rdLine(&p0, &p1, new_v0.color, new_v1.color, screen);
 }
 
 // multiple

@@ -2,7 +2,7 @@
 #include <time.h>
 #include "renderer_ascii.h"
 
-void sleep(int ms);
+void sleep(int);
 
 int main(int argc, char* argv[]){
     RdScreen window = rdCreateScreen(atol(argv[1]), atol(argv[2]));
@@ -12,29 +12,25 @@ int main(int argc, char* argv[]){
     window.viewport = &view;
 
     const float side = 0.5f;
-    const float far = 1.25f;
-    const float color = 1.0f;
+    const float color = 0.99f;
 
     RdVertex3f verts[8] = {
-        (RdVertex3f){-side, side, far, color},
-        (RdVertex3f){side, side, far, color},
-        (RdVertex3f){-side, side, side + far, color},
-        (RdVertex3f){side, side, side + far, color},
-        (RdVertex3f){-side, -side, far, color},
-        (RdVertex3f){side, -side, far, color},
-        (RdVertex3f){-side, -side, side + far, color},
-        (RdVertex3f){side, -side, side + far, color},
+        (RdVertex3f){-side, side, -side, color},
+        (RdVertex3f){side, side, -side, color},
+        (RdVertex3f){-side, side, side, color},
+        (RdVertex3f){side, side, side, color},
+        (RdVertex3f){-side, -side, -side, color},
+        (RdVertex3f){side, -side, -side, color},
+        (RdVertex3f){-side, -side, side, color},
+        (RdVertex3f){side, -side, side, color},
     };
 
-    for(size_t i = 0; i < 8; i++) verts[i].x -= 0.75f;
+    rdSetTranslate3f(0, 0, 1.5f);
 
-    rdFlush(); // clear console
-
-    while(verts[0].x < 2.0f){
-        for(size_t i = 0; i < 8; i++) verts[i].x += 0.005f;
-
+    for(size_t i = 0; i < 640; i++){
+        rdSetRotateY3f(i);
         rdClear(&window);
-    
+
         rdLine3f(verts, verts + 1, &window);
         rdLine3f(verts, verts + 2, &window);
         rdLine3f(verts + 1, verts + 3, &window);
@@ -49,11 +45,9 @@ int main(int argc, char* argv[]){
         rdLine3f(verts + 3, verts + 7, &window);
 
         rdDRender(&window);
-
-        sleep(2);
+        sleep(5);
     }
 
-    rdFlush();
     rdDestroyScreen(&window);
     return 0;
 }
