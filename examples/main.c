@@ -14,42 +14,21 @@ int main(int argc, char* argv[]){
     RdViewport view = rdCreateViewportIdentity(&window);
     window.viewport = &view;
 
-    const float side = 0.5f;
-    const float color = 0.99f;
-
-    RdVertex3f verts[8] = {
-        (RdVertex3f){-side, side, -side, color},
-        (RdVertex3f){side, side, -side, color},
-        (RdVertex3f){-side, side, side, color},
-        (RdVertex3f){side, side, side, color},
-        (RdVertex3f){-side, -side, -side, color},
-        (RdVertex3f){side, -side, -side, color},
-        (RdVertex3f){-side, -side, side, color},
-        (RdVertex3f){side, -side, side, color},
+    RdVertex2f verts[4] = {
+        (RdVertex2f){-0.5, 0.5f, 1.0f},
+        (RdVertex2f){0.5, 0.5f, 1.0f},
+        (RdVertex2f){0.5, -0.5f, 1.0f},
+        (RdVertex2f){-0.5, -0.5f, 1.0f}
     };
 
-    rdSetTranslate3f(0, 0, 1.5f);
+    rdSetScale2f(0.75f, 0.75f);
+    rdSetRotate2f(45.0f);
+    rdSetTranslate2f(0.5f, 0.0f);
 
-    for(size_t i = 0; i < 640; i++){
-        rdSetRotate3f(1, 1, 1, i);
-        rdClear(&window);
+    rdClear(&window);
+    rdLines2f(verts, 4, &window, LINE_LOOP);
+    rdRender(&window);
 
-        rdLine3f(verts, verts + 1, &window);
-        rdLine3f(verts, verts + 2, &window);
-        rdLine3f(verts + 1, verts + 3, &window);
-        rdLine3f(verts + 2, verts + 3, &window);
-        rdLine3f(verts + 4, verts + 5, &window);
-        rdLine3f(verts + 4, verts + 6, &window);
-        rdLine3f(verts + 5, verts + 7, &window);
-        rdLine3f(verts + 6, verts + 7, &window);
-        rdLine3f(verts, verts + 4, &window);
-        rdLine3f(verts + 1, verts + 5, &window);
-        rdLine3f(verts + 2, verts + 6, &window);
-        rdLine3f(verts + 3, verts + 7, &window);
-
-        rdDRender(&window);
-        sleep(5); //5
-    }
 
     rdDestroyScreen(&window);
     return 0;

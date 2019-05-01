@@ -8,6 +8,9 @@
 #include <math.h>
 #include <omp.h>
 
+/////////////////////////////////////////////////////
+//                     MACROS
+/////////////////////////////////////////////////////
 #define RD_NORMALIZED_FLOAT(X) if(X < -1.0f) X = -1.0f;\
 else if(X > 1.0f) X = 1.0f;
 
@@ -15,28 +18,13 @@ else if(X > 1.0f) X = 1.0f;
 else if(X > 1.0f) X = 1.0f;
 
 // #define RD_DEBUG
-// #define RD_SHOW_GRID
+#define RD_SHOW_GRID
 // #define RD_WHITE_BACK
 
+/////////////////////////////////////////////////////
+//                 DATA STRUCTURES
+/////////////////////////////////////////////////////
 typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINES_FULL} RD_LINES;
-
-float rdTranslate3f[4][4] = {
-    {1, 0, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 1, 0},
-    {0, 0, 0, 1}
-};
-float rdRotate3f[3][3] = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1}
-};
-float rdScale3f[4][4] = {
-    {1, 0, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 1, 0},
-    {0, 0, 0, 1}
-};
 
 typedef struct RdVertex2f{
     float x, y, color;
@@ -56,17 +44,61 @@ typedef struct RdScreen{
     char* buffer;
 } RdScreen;
 
-
 typedef struct RdScreenPoint{
     size_t x, y;
 } RdScreenPoint;
 
-// grayscale representation in ascii took from
-// https://people.sc.fsu.edu/~jburkardt/data/ascii_art_grayscale/ascii_art_grayscale.html
-// also you can take a look at this resourse
-// http://mewbies.com/geek_fun_files/ascii/ascii_art_light_scale_and_gray_scale_chart.htm
+
+/////////////////////////////////////////////////////
+//                   GLOBAL OBJECTS
+/////////////////////////////////////////////////////
+
+float rdTranslate3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+float rdRotate3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+float rdScale3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+
+float rdTranslate2f[3][3] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
+};
+float rdRotate2f[3][3] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
+};
+float rdScale2f[3][3] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
+};
+
+
+/*
+    - grayscale representation in ascii took from:
+    https://people.sc.fsu.edu/~jburkardt/data/ascii_art_grayscale/ascii_art_grayscale.html
+    
+    - also you can take a look at this resourse:
+    http://mewbies.com/geek_fun_files/ascii/ascii_art_light_scale_and_gray_scale_chart.htm
+*/
 static char _rdColorBlackBack[] = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 static char _rdColorWhiteBack[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+
 
 /////////////////////////////////////////////////////
 //                      UTILS
@@ -97,6 +129,64 @@ float maxf(float x, float y){
     return x > y ? x : y;
 }
 
+// 2D
+void rdSetTranslate2f(float x, float y){
+    rdTranslate2f[0][0] = 1.0f;
+    rdTranslate2f[0][1] = 0.0f;
+    rdTranslate2f[0][2] = x;
+
+    rdTranslate2f[1][0] = 0.0f;
+    rdTranslate2f[1][1] = 1.0f;
+    rdTranslate2f[1][2] = y;
+
+    rdTranslate2f[2][0] = 0.0f;
+    rdTranslate2f[2][1] = 0.0f;
+    rdTranslate2f[2][2] = 1.0f;
+}
+
+void rdSetRotate2f(float angle){
+    float rad = angle * 3.1416f / 180.0f;
+    float s = sinf(rad);
+    float c = cosf(rad);
+
+    rdRotate2f[0][0] = c;
+    rdRotate2f[0][1] = -s;
+    rdRotate2f[0][2] = 0.0f;
+
+    rdRotate2f[1][0] = s;
+    rdRotate2f[1][1] = c;
+    rdRotate2f[1][2] = 0.0f;
+
+    rdRotate2f[2][0] = 0.0f;
+    rdRotate2f[2][1] = 0.0f;
+    rdRotate2f[2][2] = 1.0f;
+}
+
+void rdSetScale2f(float sx, float sy){
+    rdScale2f[0][0] = sx;
+    rdScale2f[0][1] = 0.0f;
+    rdScale2f[0][2] = 0.0f;
+
+    rdScale2f[1][0] = 0.0f;
+    rdScale2f[1][1] = sy;
+    rdScale2f[1][2] = 0.0f;
+
+    rdScale2f[2][0] = 0.0f;
+    rdScale2f[2][1] = 0.0f;
+    rdScale2f[2][2] = 1.0f;
+}
+
+RdVertex2f rdMat3Mul2f(RdVertex2f* v, float mat[3][3]){
+    float x, y, w;
+
+    x = v->x * mat[0][0] + v->y * mat[0][1] + mat[0][2];
+    y = v->x * mat[1][0] + v->y * mat[1][1] + mat[1][2];
+    w = v->x * mat[2][0] + v->y * mat[2][1] + mat[2][2];
+
+    return (RdVertex2f){x, y, v->color};
+}
+
+// 3D
 void rdSetTranslate3f(float x, float y, float z){
     rdTranslate3f[0][0] = 1.0f;
     rdTranslate3f[0][1] = 0.0f;
@@ -139,14 +229,22 @@ void rdSetRotate3f(float x, float y, float z, float angle){
     rdRotate3f[0][0] = c + icx * x;
     rdRotate3f[0][1] = icx * y - sz;
     rdRotate3f[0][2] = icx * z + sy;
+    rdRotate3f[0][3] = 0.0f;
 
     rdRotate3f[1][0] = icx * y + sz;
     rdRotate3f[1][1] = c + icy * y;
     rdRotate3f[1][2] = icy * z - sx;
+    rdRotate3f[1][3] = 0.0f;
 
     rdRotate3f[2][0] = icx * z - sy;
     rdRotate3f[2][1] = icy * z + sx;
     rdRotate3f[2][2] = c + ic * z * z;
+    rdRotate3f[2][3] = 0.0f;
+
+    rdRotate3f[3][0] = 0.0f;
+    rdRotate3f[3][1] = 0.0f;
+    rdRotate3f[3][2] = 0.0f;
+    rdRotate3f[3][3] = 1.0f;
 }
 
 void rdSetScale3f(float sx, float sy, float sz){
@@ -182,16 +280,6 @@ RdVertex3f rdMat4Mul3f(RdVertex3f* v, float mat[4][4]){
     return (RdVertex3f){x, y, z, v->color};
 }
 
-RdVertex3f rdMat3Mul3f(RdVertex3f* v, float mat[3][3]){
-    float x, y, z;
-
-    x = v->x * mat[0][0] + v->y * mat[0][1] + v->z * mat[0][2];
-    y = v->x * mat[1][0] + v->y * mat[1][1] + v->z * mat[1][2];
-    z = v->x * mat[2][0] + v->y * mat[2][1] + v->z * mat[2][2];
-
-    return (RdVertex3f){x, y, z, v->color};
-}
-
 
 /////////////////////////////////////////////////////
 //                      SCREEN
@@ -222,8 +310,8 @@ char* _rdGetBufferOffset(RdScreenPoint* p, RdScreen* screen){
 }
 
 RdScreenPoint _rdGetScreenPoint2f(float x, float y, RdScreen* screen){
-    size_t _x =  (x + 1) * screen->w / 2;
-    size_t _y = (1 - y) * screen->h / 2;
+    size_t _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
+    size_t _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
 
     if(_x == screen->w) _x--;
     if(_y == screen->h) _y--;
@@ -307,8 +395,12 @@ void _rdLine(RdScreenPoint* p0, RdScreenPoint* p1, float color0, float color1, R
 
 // single
 void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
-    RdScreenPoint p = _rdGetScreenPoint2f(v->x, v->y, screen);
-    _rdSetScreenPoint(&p, v->color, screen);
+    RdVertex2f new_v = rdMat3Mul2f(v, rdScale2f);
+    new_v = rdMat3Mul2f(&new_v, rdRotate2f);
+    new_v = rdMat3Mul2f(&new_v, rdTranslate2f);
+
+    RdScreenPoint p = _rdGetScreenPoint2f(new_v.x, new_v.y, screen);
+    _rdSetScreenPoint(&p, new_v.color, screen);
 
     #ifdef RD_DEBUG
     printf("[Point2f] thread: %d vertex: (%f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, p.x, p.y);
@@ -317,7 +409,7 @@ void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
 void rdPoint3f(RdVertex3f* v, RdScreen* screen){
     if(v->z > 0){
         RdVertex3f new_v = rdMat4Mul3f(v, rdScale3f);
-        new_v = rdMat3Mul3f(&new_v, rdRotate3f);
+        new_v = rdMat4Mul3f(&new_v, rdRotate3f);
         new_v = rdMat4Mul3f(&new_v, rdTranslate3f);
 
         RdScreenPoint p = _rdGetScreenPoint3f(new_v.x, new_v.y, new_v.z, screen);
@@ -330,17 +422,26 @@ void rdPoint3f(RdVertex3f* v, RdScreen* screen){
 }
 
 void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdScreen* screen){
-    RdScreenPoint p0 = _rdGetScreenPoint2f(v0->x, v0->y, screen);
-    RdScreenPoint p1 = _rdGetScreenPoint2f(v1->x, v1->y, screen);
+    RdVertex2f new_v0 = rdMat3Mul2f(v0, rdScale2f);
+    RdVertex2f new_v1 = rdMat3Mul2f(v1, rdScale2f);
+
+    new_v0 = rdMat3Mul2f(&new_v0, rdRotate2f);
+    new_v1 = rdMat3Mul2f(&new_v1, rdRotate2f);
+
+    new_v0 = rdMat3Mul2f(&new_v0, rdTranslate2f);
+    new_v1 = rdMat3Mul2f(&new_v1, rdTranslate2f);
+
+    RdScreenPoint p0 = _rdGetScreenPoint2f(new_v0.x, new_v0.y, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint2f(new_v1.x, new_v1.y, screen);
    
-    _rdLine(&p0, &p1, v0->color, v1->color, screen);
+    _rdLine(&p0, &p1, new_v0.color, new_v1.color, screen);
 }
 void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
     RdVertex3f new_v0 = rdMat4Mul3f(v0, rdScale3f);
     RdVertex3f new_v1 = rdMat4Mul3f(v1, rdScale3f);
 
-    new_v0 = rdMat3Mul3f(&new_v0, rdRotate3f);
-    new_v1 = rdMat3Mul3f(&new_v1, rdRotate3f);
+    new_v0 = rdMat4Mul3f(&new_v0, rdRotate3f);
+    new_v1 = rdMat4Mul3f(&new_v1, rdRotate3f);
 
     new_v0 = rdMat4Mul3f(&new_v0, rdTranslate3f);
     new_v1 = rdMat4Mul3f(&new_v1, rdTranslate3f);
