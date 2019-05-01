@@ -33,6 +33,13 @@ float rdRotateY3f[4][4] = {
     {0, 0, 0, 1}
 };
 
+float rdScale3f[4][4] = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+
 typedef struct RdVertex2f{
     float x, y, color;
 } RdVertex2f;
@@ -136,6 +143,28 @@ void rdSetRotateY3f(float angle){
     rdRotateY3f[3][1] = 0.0f;
     rdRotateY3f[3][2] = 0.0f;
     rdRotateY3f[3][3] = 1.0f;
+}
+
+void rdSetScale3f(float sx, float sy, float sz){
+    rdScale3f[0][0] = sx;
+    rdScale3f[0][1] = 0.0f;
+    rdScale3f[0][2] = 0.0f;
+    rdScale3f[0][3] = 0.0f;
+
+    rdScale3f[1][0] = 0.0f;
+    rdScale3f[1][1] = sy;
+    rdScale3f[1][2] = 0.0f;
+    rdScale3f[1][3] = 0.0f;
+
+    rdScale3f[2][0] = 0.0f;
+    rdScale3f[2][1] = 0.0f;
+    rdScale3f[2][2] = sz;
+    rdScale3f[2][3] = 0.0f;
+
+    rdScale3f[3][0] = 0.0f;
+    rdScale3f[3][1] = 0.0f;
+    rdScale3f[3][2] = 0.0f;
+    rdScale3f[3][3] = 1.0f;
 }
 
 RdVertex3f rdMatMul3f(RdVertex3f* v, float mat[4][4]){
@@ -266,7 +295,8 @@ void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
 }
 void rdPoint3f(RdVertex3f* v, RdScreen* screen){
     if(v->z > 0){
-        RdVertex3f new_v = rdMatMul3f(v, rdRotateY3f);
+        RdVertex3f new_v = rdMatMul3f(v, rdScale3f);
+        new_v = rdMatMul3f(&new_v, rdRotateY3f);
         new_v = rdMatMul3f(&new_v, rdTranslate3f);
 
         RdScreenPoint p = _rdGetScreenPoint3f(new_v.x, new_v.y, new_v.z, screen);
@@ -285,8 +315,11 @@ void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdScreen* screen){
     _rdLine(&p0, &p1, v0->color, v1->color, screen);
 }
 void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
-    RdVertex3f new_v0 = rdMatMul3f(v0, rdRotateY3f);
-    RdVertex3f new_v1 = rdMatMul3f(v1, rdRotateY3f);
+    RdVertex3f new_v0 = rdMatMul3f(v0, rdScale3f);
+    RdVertex3f new_v1 = rdMatMul3f(v1, rdScale3f);
+
+    new_v0 = rdMatMul3f(&new_v0, rdRotateY3f);
+    new_v1 = rdMatMul3f(&new_v1, rdRotateY3f);
 
     new_v0 = rdMatMul3f(&new_v0, rdTranslate3f);
     new_v1 = rdMatMul3f(&new_v1, rdTranslate3f);

@@ -25,6 +25,7 @@ int main(int argc, char* argv[]){
         (RdVertex3f){side, -side, side, color},
     };
 
+    rdSetScale3f(1.5f, 1, 1);
     rdSetTranslate3f(0, 0, 1.5f);
 
     for(size_t i = 0; i < 640; i++){
