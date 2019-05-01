@@ -21,14 +21,17 @@ int main(int argc, char* argv[]){
         (RdVertex2f){-0.5, -0.5f, 1.0f}
     };
 
-    rdSetScale2f(0.75f, 0.75f);
-    rdSetRotate2f(45.0f);
-    rdSetTranslate2f(0.5f, 0.0f);
+    // rdSetScale2f(0.75f, 0.75f);
+    rdSetTranslate2f(0.7f, 0.0f);
 
-    rdClear(&window);
-    rdLines2f(verts, 4, &window, LINE_LOOP);
-    rdRender(&window);
+    for(size_t i = 0; i < 720; i++){
+        rdSetRotate2f(i);
 
+        rdClear(&window);
+        rdLines2f(verts, 4, &window, LINE_LOOP);
+        rdDRender(&window);
+        sleep(5);
+    }
 
     rdDestroyScreen(&window);
     return 0;

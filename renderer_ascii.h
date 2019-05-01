@@ -45,7 +45,7 @@ typedef struct RdScreen{
 } RdScreen;
 
 typedef struct RdScreenPoint{
-    size_t x, y;
+    int x, y;
 } RdScreenPoint;
 
 
@@ -303,6 +303,7 @@ void rdDestroyScreen(RdScreen* screen){
 }
 
 char* _rdGetBufferOffset(RdScreenPoint* p, RdScreen* screen){
+    if(p->x < 0 || p->y < 0) return NULL;
     if(p->x >= screen->w || p->y >= screen->h) return NULL;
 
     char* offset = screen->buffer + p->y * screen->w + p->x;
@@ -310,8 +311,8 @@ char* _rdGetBufferOffset(RdScreenPoint* p, RdScreen* screen){
 }
 
 RdScreenPoint _rdGetScreenPoint2f(float x, float y, RdScreen* screen){
-    size_t _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
-    size_t _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
+    int _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
+    int _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
 
     if(_x == screen->w) _x--;
     if(_y == screen->h) _y--;
@@ -323,8 +324,8 @@ RdScreenPoint _rdGetScreenPoint3f(float x, float y, float z, RdScreen* screen){
     x *= c;
     y *= c;
 
-    size_t _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
-    size_t _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
+    int _x =  x * (screen->w / screen->viewport->w) / 2 + screen->w / 2;
+    int _y = screen->h / 2 - y * (screen->h / screen->viewport->h) / 2;
 
     if(_x == screen->w) _x--;
     if(_y == screen->h) _y--;
