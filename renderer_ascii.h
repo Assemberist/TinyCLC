@@ -199,6 +199,7 @@ RdVertex3f rdMat3Mul3f(RdVertex3f* v, float mat[3][3]){
 RdScreen rdCreateScreen(size_t w, size_t h){
     RdScreen result = {.h = h, .w = w, .total = h * w};
     result.buffer = malloc(h * w);
+    result.viewport = NULL;
 
     return result;
 }

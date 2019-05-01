@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     rdSetTranslate3f(0, 0, 1.5f);
 
     for(size_t i = 0; i < 640; i++){
-        rdSetRotate3f(1, 1, 0, i);
+        rdSetRotate3f(1, 1, 1, i);
         rdClear(&window);
 
         rdLine3f(verts, verts + 1, &window);
