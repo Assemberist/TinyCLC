@@ -25,11 +25,10 @@ int main(int argc, char* argv[]){
         (RdVertex3f){side, -side, side, color},
     };
 
-    rdSetScale3f(1.5f, 1, 1);
     rdSetTranslate3f(0, 0, 1.5f);
 
     for(size_t i = 0; i < 640; i++){
-        rdSetRotateY3f(i);
+        rdSetRotate3f(1, 1, 0, i);
         rdClear(&window);
 
         rdLine3f(verts, verts + 1, &window);
@@ -46,7 +45,7 @@ int main(int argc, char* argv[]){
         rdLine3f(verts + 3, verts + 7, &window);
 
         rdDRender(&window);
-        sleep(5);
+        sleep(5); //5
     }
 
     rdDestroyScreen(&window);
