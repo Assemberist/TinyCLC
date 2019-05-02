@@ -150,7 +150,7 @@ void rdSetTranslate2f(float x, float y){
 }
 
 void rdSetRotate2f(float angle){
-    float rad = angle * 3.1416f / 180.0f;
+    float rad = angle * 3.141592f / 180.0f;
     float s = sinf(rad);
     float c = cosf(rad);
 
@@ -219,7 +219,7 @@ void rdSetRotate3f(float x, float y, float z, float angle){
     y /= mod;
     z /= mod;
 
-    float rad = angle * 3.1416f / 180.0f;
+    float rad = angle * 3.141592f / 180.0f;
     float s = sinf(rad);
     float c = cosf(rad);
 
@@ -393,9 +393,9 @@ void _rdLine(RdScreenPoint* p0, RdScreenPoint* p1, float color0, float color1, f
     }
 }
 
-// void _rdTriangle(RdScreenPoint* p0, RdScreenPoint* p1, RdScreenPoint* p2, float color0, float color1, float color2, RdScreen* screen){
+void _rdTriangle(RdScreenPoint* p0, RdScreenPoint* p1, RdScreenPoint* p2, float color0, float color1, float color2, float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
     
-// }
+}
 
 // single
 void rdPoint2f(RdVertex2f* v, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
@@ -408,20 +408,18 @@ void rdPoint2f(RdVertex2f* v, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fra
     printf("[Point2f] thread: %d vertex: (%f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, p.x, p.y);
     #endif
 }
-// void rdPoint3f(RdVertex3f* v, RdScreen* screen){
-//     if(v->z > 0){
-//         RdVertex3f new_v = rdMat4Mul3f(v, rdScale3f);
-//         new_v = rdMat4Mul3f(&new_v, rdRotate3f);
-//         new_v = rdMat4Mul3f(&new_v, rdTranslate3f);
+void rdPoint3f(RdVertex3f* v, RdVertex3f(*vertexShader)(RdVertex3f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    RdVertex3f new_v = vertexShader(v);
 
-//         RdScreenPoint p = _rdGetScreenPoint3f(new_v.x, new_v.y, new_v.z, screen);
-//         _rdSetScreenPoint(&p, new_v.color, screen);
+    if(new_v.z > 0){
+        RdScreenPoint p = _rdGetScreenPoint3f(new_v.x, new_v.y, new_v.z, screen);
+        _rdSetScreenPoint(&p, fragmentShader(&p, new_v.color), screen);
 
-//         #ifdef RD_DEBUG
-//         printf("[Point3f] thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);
-//         #endif
-//     }
-// }
+        #ifdef RD_DEBUG
+        printf("[Point3f] thread: %d vertex: (%f, %f, %f) point: (%d, %d) \n", omp_get_thread_num(), v->x, v->y, v->z, p.x, p.y);
+        #endif
+    }
+}
 
 void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
     RdVertex2f new_v0 = vertexShader(v0);
@@ -432,58 +430,44 @@ void rdLine2f(RdVertex2f* v0, RdVertex2f* v1, RdVertex2f(*vertexShader)(RdVertex
    
     _rdLine(&p0, &p1, new_v0.color, new_v1.color, fragmentShader, screen);
 }
-// void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
-//     RdVertex3f new_v0 = rdMat4Mul3f(v0, rdScale3f);
-//     RdVertex3f new_v1 = rdMat4Mul3f(v1, rdScale3f);
+void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdVertex3f(*vertexShader)(RdVertex3f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    RdVertex3f new_v0 = vertexShader(v0);
+    RdVertex3f new_v1 = vertexShader(v1);
 
-//     new_v0 = rdMat4Mul3f(&new_v0, rdRotate3f);
-//     new_v1 = rdMat4Mul3f(&new_v1, rdRotate3f);
-
-//     new_v0 = rdMat4Mul3f(&new_v0, rdTranslate3f);
-//     new_v1 = rdMat4Mul3f(&new_v1, rdTranslate3f);
-
-//     RdScreenPoint p0 = _rdGetScreenPoint3f(new_v0.x, new_v0.y, new_v0.z, screen);
-//     RdScreenPoint p1 = _rdGetScreenPoint3f(new_v1.x, new_v1.y, new_v1.z, screen);
+    RdScreenPoint p0 = _rdGetScreenPoint3f(new_v0.x, new_v0.y, new_v0.z, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint3f(new_v1.x, new_v1.y, new_v1.z, screen);
    
-//     _rdLine(&p0, &p1, new_v0.color, new_v1.color, screen);
-// }
+    _rdLine(&p0, &p1, new_v0.color, new_v1.color, fragmentShader, screen);
+}
 
-// void rdTriangle2f(RdVertex2f* v0, RdVertex2f* v1, RdVertex2f* v2, RdScreen* screen){
-//     RdVertex2f new_v0 = rdMat3Mul2f(v0, rdScale2f);
-//     RdVertex2f new_v1 = rdMat3Mul2f(v1, rdScale2f);
-//     RdVertex2f new_v2 = rdMat3Mul2f(v2, rdScale2f);
+void rdTriangle2f(RdVertex2f* v0, RdVertex2f* v1, RdVertex2f* v2, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    RdVertex2f new_v0 = vertexShader(v0);
+    RdVertex2f new_v1 = vertexShader(v1);
+    RdVertex2f new_v2 = vertexShader(v2);
 
-//     new_v0 = rdMat3Mul2f(&new_v0, rdRotate2f);
-//     new_v1 = rdMat3Mul2f(&new_v1, rdRotate2f);
-//     new_v2 = rdMat3Mul2f(&new_v2, rdRotate2f);
+    RdScreenPoint p0 = _rdGetScreenPoint(new_v0.x, new_v0.y, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint(new_v1.x, new_v1.y, screen);
+    RdScreenPoint p2 = _rdGetScreenPoint(new_v2.x, new_v2.y, screen);
 
-//     new_v0 = rdMat3Mul2f(&new_v0, rdTranslate2f);
-//     new_v1 = rdMat3Mul2f(&new_v1, rdTranslate2f);
-//     new_v2 = rdMat3Mul2f(&new_v2, rdTranslate2f);
-
-//     RdScreenPoint p0 = _rdGetScreenPoint(new_v0.x, new_v0.y, screen);
-//     RdScreenPoint p1 = _rdGetScreenPoint(new_v1.x, new_v1.y, screen);
-//     RdScreenPoint p2 = _rdGetScreenPoint(new_v2.x, new_v2.y, screen);
-
-//     _rdTriangle(&p0, &p1, &p2, new_v0.color, new_v1.color, new_v2.color, screen);
-// }
+    _rdTriangle(&p0, &p1, &p2, new_v0.color, new_v1.color, new_v2.color, fragmentShader, screen);
+}
 
 // // multiple
-// void rdPoints2f(RdVertex2f* verts, size_t count, RdScreen* screen){
-//     #pragma omp parallel for schedule(guided)
-//     for(size_t i = 0; i < count; i++) rdPoint2f(verts + i, screen);
-// }
+void rdPoints2f(RdVertex2f* verts, size_t count, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < count; i++) rdPoint2f(verts + i, vertexShader, fragmentShader, screen);
+}
 
-// void rdPoints3f(RdVertex3f* verts, size_t count, RdScreen* screen){
-//     #pragma omp parallel for schedule(guided)
-//     for(size_t i = 0; i < count; i++) rdPoint3f(verts + i, screen);
-// }
+void rdPoints3f(RdVertex3f* verts, size_t count, RdVertex3f(*vertexShader)(RdVertex3f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < count; i++) rdPoint3f(verts + i, vertexShader, fragmentShader, screen);
+}
 
 void rdLines2f(RdVertex2f* verts, RdIndex2* indexes, size_t indexes_count, RdVertex2f(*vertexShader)(RdVertex2f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
     for(size_t i = 0; i < indexes_count; i++)
         rdLine2f(verts + indexes[i].i0, verts + indexes[i].i1, vertexShader, fragmentShader, screen);
 }
-// void rdLines3f(RdVertex3f* verts, RdIndex2* indexes, size_t indexes_count, RdScreen* screen){
-//     for(size_t i = 0; i < indexes_count; i++)
-//         rdLine3f(verts + indexes[i].i0, verts + indexes[i].i1, screen);
-// }
+void rdLines3f(RdVertex3f* verts, RdIndex2* indexes, size_t indexes_count, RdVertex3f(*vertexShader)(RdVertex3f*), float(*fragmentShader)(RdScreenPoint*, float), RdScreen* screen){
+    for(size_t i = 0; i < indexes_count; i++)
+        rdLine3f(verts + indexes[i].i0, verts + indexes[i].i1, vertexShader, fragmentShader, screen);
+}

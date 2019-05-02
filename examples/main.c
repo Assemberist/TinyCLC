@@ -4,10 +4,10 @@
 
 void sleep(int);
 
-RdVertex2f vShader(RdVertex2f* v){
-    RdVertex2f result = rdMat3Mul2f(v, rdScale2f);
-    result = rdMat3Mul2f(&result, rdRotate2f);
-    result = rdMat3Mul2f(&result, rdTranslate2f);
+RdVertex3f vShader(RdVertex3f* v){
+    RdVertex3f result = rdMat4Mul3f(v, rdScale3f);
+    result = rdMat4Mul3f(&result, rdRotate3f);
+    result = rdMat4Mul3f(&result, rdTranslate3f);
 
     return result;
 }
@@ -25,21 +25,40 @@ int main(int argc, char* argv[]){
     RdViewport view = {1.0f, 1.0f, 1.0f};
     window.viewport = &view;
 
-    RdVertex2f verts[3] = {
-        (RdVertex2f){0.0f, 1.0f, 0.25f},
-        (RdVertex2f){-1.0f, -1.0f, 0.5f},
-        (RdVertex2f){1.0f, -1.0f, 1.0f}
+    const float side = 0.5f;
+    const float color = 0.99f;
+
+    RdVertex3f verts[8] = {
+        (RdVertex3f){-side, side, -side, color},
+        (RdVertex3f){side, side, -side, color},
+        (RdVertex3f){-side, side, side, color},
+        (RdVertex3f){side, side, side, color},
+        (RdVertex3f){-side, -side, -side, color},
+        (RdVertex3f){side, -side, -side, color},
+        (RdVertex3f){-side, -side, side, color},
+        (RdVertex3f){side, -side, side, color},
     };
-    RdIndex2 indexes[3] = {
+
+    RdIndex2 indexes[12] = {
         (RdIndex2){0, 1},
         (RdIndex2){0, 2},
-        (RdIndex2){1, 2}
+        (RdIndex2){0, 4},
+        (RdIndex2){1, 3},
+        (RdIndex2){1, 5},
+        (RdIndex2){2, 3},
+        (RdIndex2){2, 6},
+        (RdIndex2){4, 5},
+        (RdIndex2){4, 6},
+        (RdIndex2){5, 7},
+        (RdIndex2){6, 7},
+        (RdIndex2){3, 7}
     };
 
-    rdSetRotate2f(90.0f);
+    rdSetTranslate3f(0.0f, 0.0f, 1.5f);
+    rdSetRotate3f(0, 1, 0, 30);
 
     rdClear(&window);
-    rdLines2f(verts, indexes, 3, vShader, fShader, &window);
+    rdLines3f(verts, indexes, 12, vShader, fShader, &window);
     rdRender(&window);
 
     rdDestroyScreen(&window);
