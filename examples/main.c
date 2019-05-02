@@ -14,23 +14,44 @@ int main(int argc, char* argv[]){
     RdViewport view = rdCreateViewportIdentity(&window);
     window.viewport = &view;
 
-    RdVertex2f verts[4] = {
-        (RdVertex2f){-0.5, 0.5f, 1.0f},
-        (RdVertex2f){0.5, 0.5f, 1.0f},
-        (RdVertex2f){0.5, -0.5f, 1.0f},
-        (RdVertex2f){-0.5, -0.5f, 1.0f}
+    const float side = 0.5f;
+    const float color = 0.99f;
+
+    RdVertex3f verts[8] = {
+        (RdVertex3f){-side, side, -side, color},
+        (RdVertex3f){side, side, -side, color},
+        (RdVertex3f){-side, side, side, color},
+        (RdVertex3f){side, side, side, color},
+        (RdVertex3f){-side, -side, -side, color},
+        (RdVertex3f){side, -side, -side, color},
+        (RdVertex3f){-side, -side, side, color},
+        (RdVertex3f){side, -side, side, color},
     };
 
-    // rdSetScale2f(0.75f, 0.75f);
-    rdSetTranslate2f(0.7f, 0.0f);
+    RdIndex2 indexes[12] = {
+        (RdIndex2){0, 1},
+        (RdIndex2){0, 2},
+        (RdIndex2){0, 4},
+        (RdIndex2){1, 3},
+        (RdIndex2){1, 5},
+        (RdIndex2){2, 3},
+        (RdIndex2){2, 6},
+        (RdIndex2){4, 5},
+        (RdIndex2){4, 6},
+        (RdIndex2){5, 7},
+        (RdIndex2){6, 7},
+        (RdIndex2){3, 7}
+    };
 
-    for(size_t i = 0; i < 720; i++){
-        rdSetRotate2f(i);
+    rdSetTranslate3f(0, 0, 1.5f);
+
+    for(size_t i = 0; i < 640; i++){
+        rdSetRotate3f(1, 1, 1, i);
 
         rdClear(&window);
-        rdLines2f(verts, 4, &window, LINE_LOOP);
+        rdLines3f(verts, indexes, 12, &window);
         rdDRender(&window);
-        sleep(5);
+        sleep(5); //5
     }
 
     rdDestroyScreen(&window);

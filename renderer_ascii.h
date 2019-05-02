@@ -24,8 +24,6 @@ else if(X > 1.0f) X = 1.0f;
 /////////////////////////////////////////////////////
 //                 DATA STRUCTURES
 /////////////////////////////////////////////////////
-typedef enum {LINES, LINE_STRIP, LINE_LOOP, LINES_FULL} RD_LINES;
-
 typedef struct RdVertex2f{
     float x, y, color;
 } RdVertex2f;
@@ -48,6 +46,13 @@ typedef struct RdScreenPoint{
     int x, y;
 } RdScreenPoint;
 
+typedef struct RdIndex2{
+    size_t i0, i1;
+} RdIndex2;
+
+typedef struct RdIndex3{
+    size_t i0, i1, i2;
+} RdIndex3;
 
 /////////////////////////////////////////////////////
 //                   GLOBAL OBJECTS
@@ -394,6 +399,10 @@ void _rdLine(RdScreenPoint* p0, RdScreenPoint* p1, float color0, float color1, R
     }
 }
 
+void _rdTriangle(RdScreenPoint* p0, RdScreenPoint* p1, RdScreenPoint* p2, float color0, float color1, float color2, RdScreen* screen){
+    
+}
+
 // single
 void rdPoint2f(RdVertex2f* v,  RdScreen* screen){
     RdVertex2f new_v = rdMat3Mul2f(v, rdScale2f);
@@ -453,54 +462,42 @@ void rdLine3f(RdVertex3f* v0, RdVertex3f* v1, RdScreen* screen){
     _rdLine(&p0, &p1, new_v0.color, new_v1.color, screen);
 }
 
+void rdTriangle2f(RdVertex2f* v0, RdVertex2f* v1, RdVertex2f* v2, RdScreen* screen){
+    RdVertex2f new_v0 = rdMat3Mul2f(v0, rdScale2f);
+    RdVertex2f new_v1 = rdMat3Mul2f(v1, rdScale2f);
+    RdVertex2f new_v2 = rdMat3Mul2f(v2, rdScale2f);
+
+    new_v0 = rdMat3Mul2f(&new_v0, rdRotate2f);
+    new_v1 = rdMat3Mul2f(&new_v1, rdRotate2f);
+    new_v2 = rdMat3Mul2f(&new_v2, rdRotate2f);
+
+    new_v0 = rdMat3Mul2f(&new_v0, rdTranslate2f);
+    new_v1 = rdMat3Mul2f(&new_v1, rdTranslate2f);
+    new_v2 = rdMat3Mul2f(&new_v2, rdTranslate2f);
+
+    RdScreenPoint p0 = _rdGetScreenPoint2f(new_v0.x, new_v0.y, screen);
+    RdScreenPoint p1 = _rdGetScreenPoint2f(new_v1.x, new_v1.y, screen);
+    RdScreenPoint p2 = _rdGetScreenPoint2f(new_v2.x, new_v2.y, screen);
+
+    _rdTriangle(&p0, &p1, &p2, new_v0.color, new_v1.color, new_v2.color, screen);
+}
+
 // multiple
-void rdPoints2f(RdVertex2f* v, size_t count, RdScreen* screen){
+void rdPoints2f(RdVertex2f* verts, size_t count, RdScreen* screen){
     #pragma omp parallel for schedule(guided)
-    for(size_t i = 0; i < count; i++) rdPoint2f(v + i, screen);
+    for(size_t i = 0; i < count; i++) rdPoint2f(verts + i, screen);
 }
 
-void rdPoints3f(RdVertex3f* v, size_t count, RdScreen* screen){
+void rdPoints3f(RdVertex3f* verts, size_t count, RdScreen* screen){
     #pragma omp parallel for schedule(guided)
-    for(size_t i = 0; i < count; i++) rdPoint3f(v + i, screen);
+    for(size_t i = 0; i < count; i++) rdPoint3f(verts + i, screen);
 }
 
-void rdLines2f(RdVertex2f* v, size_t count, RdScreen* screen, RD_LINES option){
-    if(option == LINES){
-        for(size_t i = 0; i < count; i += 2)
-            rdLine2f(v + i, v + i + 1, screen);
-    }else if(option == LINE_STRIP){
-        for(size_t i = 0; i < count - 1; i++)
-            rdLine2f(v + i, v + i + 1, screen);
-    }else if(option == LINE_LOOP){
-        for(size_t i = 0; i < count; i++){
-            if(i < count - 1)
-                rdLine2f(v + i, v + i + 1, screen);
-            else
-                rdLine2f(v + i, v, screen);
-        }
-    }else if(option == LINES_FULL){
-        for(size_t i = 0; i < count; i++)
-            for(size_t j = 0; j < count; j++)
-                if(i != j) rdLine2f(v + i, v + j, screen);
-    }
+void rdLines2f(RdVertex2f* verts, RdIndex2* indexes, size_t indexes_count, RdScreen* screen){
+    for(size_t i = 0; i < indexes_count; i++)
+        rdLine2f(verts + indexes[i].i0, verts + indexes[i].i1, screen);
 }
-void rdLines3f(RdVertex3f* v, size_t count, RdScreen* screen, RD_LINES option){
-    if(option == LINES){
-        for(size_t i = 0; i < count; i += 2)
-            rdLine3f(v + i, v + i + 1, screen);
-    }else if(option == LINE_STRIP){
-        for(size_t i = 0; i < count - 1; i++)
-            rdLine3f(v + i, v + i + 1, screen);
-    }else if(option == LINE_LOOP){
-        for(size_t i = 0; i < count; i++){
-            if(i < count - 1)
-                rdLine3f(v + i, v + i + 1, screen);
-            else
-                rdLine3f(v + i, v, screen);
-        }
-    }else if(option == LINES_FULL){
-        for(size_t i = 0; i < count; i++)
-            for(size_t j = 0; j < count; j++)
-                if(i != j) rdLine3f(v + i, v + j, screen);
-    }
+void rdLines3f(RdVertex3f* verts, RdIndex2* indexes, size_t indexes_count, RdScreen* screen){
+    for(size_t i = 0; i < indexes_count; i++)
+        rdLine3f(verts + indexes[i].i0, verts + indexes[i].i1, screen);
 }
