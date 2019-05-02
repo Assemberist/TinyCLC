@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     RdScreen window = rdCreateScreen(w, h);
     // RdScreen window = rdCreateScreen(31, 13);
 
-    RdViewport view = {1.0f, 1.0f, 1.0f};
+    RdViewport view = rdCreateViewportIdentity(&window);
     window.viewport = &view;
 
     const float side = 0.5f;
