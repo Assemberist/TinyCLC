@@ -352,13 +352,13 @@ void _rdSetScreenPoint(RdScreenPoint* p, float color, RdScreen* screen){
 //                     VIEWPORT
 /////////////////////////////////////////////////////
 RdViewport rdCreateViewportIdentity(RdScreen* screen){
-    float h = screen->h;
+    float h = 2.0f * screen->h;
     float w = screen->w;
 
     if(w > h)
-        return (RdViewport){1.0f, w / (2.0f * h), 1.0f};
+        return (RdViewport){1.0f, w / h, 1.0f};
     else
-        return (RdViewport){2.0f * h / w, 1.0f, 1.0f};
+        return (RdViewport){h / w, 1.0f, 1.0f};
 }
 
 /////////////////////////////////////////////////////
