@@ -2,7 +2,6 @@
 #include <time.h>
 #include "renderer_ascii.h"
 
-void sleep(int);
 
 RdVertex3f vShader(RdVertex3f* v){
     RdVertex3f result = rdMat4Mul3f(v, rdScale3f);
@@ -36,7 +35,7 @@ int main(int argc, char* argv[]){
         (RdVertex3f){-side, -side, -side, color},
         (RdVertex3f){side, -side, -side, color},
         (RdVertex3f){-side, -side, side, color},
-        (RdVertex3f){side, -side, side, color},
+        (RdVertex3f){side, -side, side, color}
     };
 
     RdIndex2 indexes[12] = {
@@ -54,21 +53,18 @@ int main(int argc, char* argv[]){
         (RdIndex2){3, 7}
     };
 
-    rdSetTranslate3f(0.0f, 0.0f, 1.5f);
-    rdSetRotate3f(0, 1, 0, 30);
+    RdProgram3f prog = {vShader, fShader};
 
-    rdClear(&window);
-    rdLines3f(verts, indexes, 12, vShader, fShader, &window);
-    rdRender(&window);
+    rdSetTranslate3f(0.0f, 0.0f, 1.5f);
+
+    for(float i = 0; i < 360; i += 0.1f){
+        rdSetRotate3f(0, 1, 0, i);
+
+        rdClear(&window);
+        rdLines3f(verts, indexes, 12, &prog, &window);
+        rdDRender(&window);
+    }
 
     rdDestroyScreen(&window);
     return 0;
-}
-
-void sleep(int ms){
-    int milisec = ms;
-    struct timespec req = {0};
-    req.tv_sec = 0;
-    req.tv_nsec = milisec * 1000000L;
-    nanosleep(&req, NULL);
 }
