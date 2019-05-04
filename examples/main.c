@@ -15,15 +15,16 @@
 // }
 
 int main(int argc, char* argv[]){
-    vec2(int) a = {1, 2};
-    int m[2][2] = {
-        {1, 2},
-        {3, 4}
+    vec3(float) a = {1, 2, 3};
+    float m[4][4] = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12},
+        {13, 14, 15, 16}
     };
 
-    auto b = mat2vec2(int)(&a, m);
-
-    printf("(%d, %d)\n", b.x, b.y);
+    auto b = mat4vec3(float)(&a, m);
+    printf("%f %f %f %f\n", b.x, b.y, b.z, b.w);
 
     return 0;
 }
