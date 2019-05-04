@@ -3,5 +3,7 @@
 Tiny collection of my c11 libraries.
 
 **List**:
-- Tiny STL
-- EasyCL
+- Tiny STL (`stl/`)
+- Linear algebra (`linear.h`)
+- ASCII 3d engine (`renderer_ascii.h`)
+- EasyCL (`easycl.h`)
