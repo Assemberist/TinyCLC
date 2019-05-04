@@ -13,10 +13,6 @@
 #define auto __auto_type
 #endif
 
-// definitions
-#define _std_small_vector(T) _std_small_vector_##T
-#define std_small_vector(T) _std_small_vector(T)
-
 #ifndef __cat
 #define __cat(X, Y) X##Y
 #endif
@@ -25,6 +21,8 @@
 #define _cat(X, Y) __cat(X, Y)
 #endif
 
+// definitions
+#define std_small_vector(T) _cat(_std_small_vector_, T)
 
 #define SMALL_VECTORS(T) typedef struct std_small_vector(T){\
     size_t _size;\

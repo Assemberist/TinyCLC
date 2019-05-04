@@ -7,7 +7,6 @@
 #define auto __auto_type
 #endif
 
-// definitions
 #ifndef __cat
 #define __cat(X, Y) X##Y
 #endif
@@ -16,16 +15,13 @@
 #define _cat(X, Y) __cat(X, Y)
 #endif
 
-
-#define _vec(dim, T) _vec##dim##_##T
-#define _mat(dim, T) _mat##dim##_##T
-
-#define vec2(T) _vec(2, T)
-#define vec3(T) _vec(3, T)
-#define vec4(T) _vec(4, T)
-#define mat2(T) _mat(2, T)
-#define mat3(T) _mat(3, T)
-#define mat4(T) _mat(4, T)
+// definitions
+#define vec2(T) _cat(_vec2_, T)
+#define vec3(T) _cat(_vec3_, T)
+#define vec4(T) _cat(_vec4_, T)
+#define mat2(T) _cat(_mat2_, T)
+#define mat3(T) _cat(_mat3_, T)
+#define mat4(T) _cat(_mat4_, T)
 
 #define LINEAR(T) \
 typedef struct vec2(T){\
@@ -191,7 +187,7 @@ vec4(T) _cat(mat4(T), vec3(T))(const vec3(T)* v, const mat4(T)* m){\
 #define mat4vec3(T) _cat(mat4(T), vec3(T))
 
 // types (std)
-#ifndef STD_ARRAY_DONT_USE_PREDEFINED_TYPES
+#ifndef LINEAR_DONT_USE_PREDEFINED_TYPES
 
 typedef unsigned char unsigned_char;
 typedef unsigned short unsigned_short;

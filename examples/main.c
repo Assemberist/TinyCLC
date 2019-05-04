@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <time.h>
+
+#define LINEAR_DONT_USE_PREDEFINED_TYPES
 #include "linear.h"
 
+LINEAR(float)
 
 int main(int argc, char* argv[]){
     mat4(float) m0 = {{

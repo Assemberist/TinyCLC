@@ -16,7 +16,7 @@
 #define _cat(X, Y) __cat(X, Y)
 #endif
 
-
+// definitions
 #ifndef std_begin
 #define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
 #endif

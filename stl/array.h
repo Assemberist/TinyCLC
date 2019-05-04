@@ -13,10 +13,6 @@
 #define auto __auto_type
 #endif
 
-// definitions
-#define _std_array(T) _std_array_##T
-#define std_array(T) _std_array(T)
-
 #ifndef __cat
 #define __cat(X, Y) X##Y
 #endif
@@ -25,6 +21,8 @@
 #define _cat(X, Y) __cat(X, Y)
 #endif
 
+// definitions
+#define std_array(T) _cat(_std_array_, T)
 
 #define ARRAYS(T) typedef struct std_array(T){\
     size_t _size;\

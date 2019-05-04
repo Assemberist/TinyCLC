@@ -13,10 +13,6 @@
 #define auto __auto_type
 #endif
 
-// definitions
-#define _std_vector(T) _std_vector_##T
-#define std_vector(T) _std_vector(T)
-
 #ifndef __cat
 #define __cat(X, Y) X##Y
 #endif
@@ -25,6 +21,8 @@
 #define _cat(X, Y) __cat(X, Y)
 #endif
 
+// definitions
+#define std_vector(T) _cat(_std_vector_, T)
 
 #define VECTORS(T) typedef struct std_vector(T){\
     size_t _size, _capacity;\
