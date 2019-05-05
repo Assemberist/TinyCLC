@@ -23,7 +23,9 @@ LINEAR(int)
 LINEAR(size_t)
 
 typedef const mat3(float)* mat3f_ptr;
+typedef const mat4(float)* mat4f_ptr;
 SMALL_VECTORS(mat3f_ptr);
+SMALL_VECTORS(mat4f_ptr);
 SMALL_VECTORS(float)
 
 /////////////////////////////////////////////////////
@@ -78,7 +80,7 @@ typedef struct RdProgram2{
 
 typedef struct RdVertexShader3{
     RdVertex4(*shader)(const RdVertex3*, struct RdVertexShader3*);
-    std_small_vector(mat3f_ptr) matrices;
+    std_small_vector(mat4f_ptr) matrices;
 } RdVertexShader3;
 
 typedef struct RdProgram3{
@@ -116,13 +118,16 @@ float rdAsciiToColor(char ascii){
 }
 
 char _rdGetColor(float color){
-    RD_NORMALIZED_FLOAT_MIN_ZERO(color)
+    char _color = _rdColorBlackBack[0];
+    if(!isnan(color)){
+        RD_NORMALIZED_FLOAT_MIN_ZERO(color)
 
-    #ifndef RD_WHITE_BACK
-    char _color = _rdColorBlackBack[(size_t)(color * 69)];
-    #else
-    char _color = _rdColorWhiteBack[(size_t)(color * 69)];
-    #endif
+        #ifndef RD_WHITE_BACK
+        _color = _rdColorBlackBack[(size_t)(color * 69)];
+        #else
+        _color = _rdColorWhiteBack[(size_t)(color * 69)];
+        #endif
+    }
 
     return _color;
 }
@@ -146,18 +151,23 @@ vec2(int) _rdMaxScreenPoint(const vec2(int) p0, const vec2(int) p1, bool by_y){
     }
 }
 vec2(int) _rdMidScreenPoint(const vec2(int) p0, const vec2(int) p1, const vec2(int) p2, bool by_y){
+    vec2(int) min;
+    vec2(int) max;
     if(!by_y){
-        if((p0.x < p1.x && p0.x > p2.x) || (p0.x < p2.x && p0.x > p1.x)) return p0;
-        else if((p1.x < p2.x && p1.x > p0.x) || (p1.x < p0.x && p1.x > p2.x)) return p1;
-        return p2;
+        min = _rdMinScreenPoint(_rdMinScreenPoint(p0, p1, false), p2, false);
+        max = _rdMaxScreenPoint(_rdMaxScreenPoint(p0, p1, false), p2, false);
     }else{
-        if((p0.y < p1.y && p0.y > p2.y) || (p0.y < p2.y && p0.y > p1.y)) return p0;
-        else if((p1.y < p2.y && p1.y > p0.y) || (p1.y < p0.y && p1.y > p2.y)) return p1;
-        return p2;
+       min = _rdMinScreenPoint(_rdMinScreenPoint(p0, p1, true), p2, true);
+       max = _rdMaxScreenPoint(_rdMaxScreenPoint(p0, p1, true), p2, true);
     }
+
+    if((p0.x != min.x || p0.y != min.y) && (p0.x != max.x || p0.y != max.y)) return p0;
+    else if((p1.x != min.x || p1.y != min.y) && (p1.x != max.x || p1.y != max.y)) return p1;
+    return p2;
 }
 
-void rdTranslate2(vec2(float) v, mat3(float)* m){
+// 2D
+void rdTranslate2(const vec2(float) v, mat3(float)* m){
     m->m[0][0] = 1.0f;
     m->m[0][1] = 0.0f;
     m->m[0][2] = v.x;
@@ -189,7 +199,7 @@ void rdRotate2(float angle, mat3(float)* m){
     m->m[2][2] = 1.0f;
 }
 
-void rdScale2(vec2(float) s, mat3(float)* m){
+void rdScale2(const vec2(float) s, mat3(float)* m){
     m->m[0][0] = s.x;
     m->m[0][1] = 0.0f;
     m->m[0][2] = 0.0f;
@@ -201,6 +211,89 @@ void rdScale2(vec2(float) s, mat3(float)* m){
     m->m[2][0] = 0.0f;
     m->m[2][1] = 0.0f;
     m->m[2][2] = 1.0f;
+}
+
+// 3D
+void rdTranslate3(const vec3(float) v, mat4(float)* m){
+    m->m[0][0] = 1.0f;
+    m->m[0][1] = 0.0f;
+    m->m[0][2] = 0.0f;
+    m->m[0][3] = v.x;
+
+    m->m[1][0] = 0.0f;
+    m->m[1][1] = 1.0f;
+    m->m[1][2] = 0.0f;
+    m->m[1][3] = v.y;
+
+    m->m[2][0] = 0.0f;
+    m->m[2][1] = 0.0f;
+    m->m[2][2] = 1.0f;
+    m->m[2][3] = v.z;
+
+    m->m[3][0] = 0.0f;
+    m->m[3][1] = 0.0f;
+    m->m[3][2] = 0.0f;
+    m->m[3][3] = 1.0f;
+}
+void rdRotate3(vec3(float) axis, float angle, mat4(float)* m){
+    float mod = sqrtf(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+    axis.x /= mod;
+    axis.y /= mod;
+    axis.z /= mod;
+
+    float rad = angle * 3.141592f / 180.0f;
+    float s = sinf(rad);
+    float c = cosf(rad);
+
+    float sx = axis.x * s;
+    float sy = axis.y * s;
+    float sz = axis.z * s;
+
+    float ic = 1.0f - c;
+    float icx = ic * axis.x;
+    float icy = ic * axis.y;
+
+    m->m[0][0] = c + icx * axis.x;
+    m->m[0][1] = icx * axis.y - sz;
+    m->m[0][2] = icx * axis.z + sy;
+    m->m[0][3] = 0.0f;
+
+    m->m[1][0] = icx * axis.y + sz;
+    m->m[1][1] = c + icy * axis.y;
+    m->m[1][2] = icy * axis.z - sx;
+    m->m[1][3] = 0.0f;
+
+    m->m[2][0] = icx * axis.z - sy;
+    m->m[2][1] = icy * axis.z + sx;
+    m->m[2][2] = c + ic * axis.z * axis.z;
+    m->m[2][3] = 0.0f;
+
+    m->m[3][0] = 0.0f;
+    m->m[3][1] = 0.0f;
+    m->m[3][2] = 0.0f;
+    m->m[3][3] = 1.0f;
+}
+
+void rdScale3(const vec3(float) s, mat4(float)* m){
+    m->m[0][0] = s.x;
+    m->m[0][1] = 0.0f;
+    m->m[0][2] = 0.0f;
+    m->m[0][3] = 0.0f;
+
+    m->m[1][0] = 0.0f;
+    m->m[1][1] = s.y;
+    m->m[1][2] = 0.0f;
+    m->m[1][3] = 0.0f;
+
+    m->m[2][0] = 0.0f;
+    m->m[2][1] = 0.0f;
+    m->m[2][2] = s.z;
+    m->m[2][3] = 0.0f;
+
+    m->m[3][0] = 0.0f;
+    m->m[3][1] = 0.0f;
+    m->m[3][2] = 0.0f;
+    m->m[3][3] = 1.0f;
 }
 
 /////////////////////////////////////////////////////
@@ -299,7 +392,7 @@ void rdDRender(const RdScreen* s){
 }
 
 // hidden
-void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* frag, RdScreen* s){
+void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* frag, const RdScreen* s){
     int dx = p1.x - p0.x;
     int dy = p1.y - p0.y;
     size_t max = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
@@ -310,7 +403,7 @@ void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* f
     vec2(float) colors_x = {0, max};
     vec2(float) colors_f = lininter(float)(colors_x, colors);
 
-    #pragma omp parallel for schedule(guided)
+    // #pragma omp parallel for schedule(guided)
     for(size_t i = 0; i <= max; i++){
         vec2(int) p = {p0.x + i * step_x, p0.y + i * step_y};
 
@@ -319,28 +412,57 @@ void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* f
         _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
     }
 }
-void _rdTriangle(vec2(int) p0, vec2(int) p1, vec2(int) p2, vec3(float) colors, RdFragmentShader* frag, RdScreen* s){
+void _rdTriangle(vec2(int) p0, vec2(int) p1, vec2(int) p2, vec3(float) colors, RdFragmentShader* frag, const RdScreen* s){
     vec2(int) min = _rdMinScreenPoint(_rdMinScreenPoint(p0, p1, false), p2, false);
     vec2(int) mid = _rdMidScreenPoint(p0, p1, p2, false);
     vec2(int) max = _rdMaxScreenPoint(_rdMaxScreenPoint(p0, p1, false), p2, false);
-
-    int dx0 = mid.x - min.x;
-    int dy0 = mid.y - min.y;
-    float s0 = (float)dy0 / dx0;
-
-    int dx1 = max.x - min.x;
-    int dy1 = max.y - min.y;
-    float s1 = (float)dy1 / dx1;
-
-    int dx2 = max.x - mid.x;
-    int dy2 = max.y - mid.y;
-    float s2 = (float)dy2 / dx2;
 
     vec3(float) colors_x = (vec3(float)){p0.x, p1.x, p2.x};
     vec3(float) colors_y = (vec3(float)){p0.y, p1.y, p2.y};
     vec3(float) colors_f = lininter2(float)(colors_x, colors_y, colors);
 
+    int dx0 = mid.x - min.x;
+    int dy0 = mid.y - min.y;
+    float s0 = (float)dy0 / dx0;
+
+    if(dx0 == 0){
+        for(int y = min.y; y <= mid.y; y++){
+            float color = vec3_mul_vec3(float)((vec3(float)){min.x, y, 1}, colors_f);
+            frag->attributes._data[0] = color;
+            vec2(int) p = {min.x, y};
+            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+        }
+    }
+
+    int dx1 = max.x - min.x;
+    int dy1 = max.y - min.y;
+    float s1 = (float)dy1 / dx1;
+
+    if(dx1 == 0){
+        for(int y = min.y; y <= max.y; y++){
+            float color = vec3_mul_vec3(float)((vec3(float)){min.x, y, 1}, colors_f);
+            frag->attributes._data[0] = color;
+            vec2(int) p = {min.x, y};
+            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+        }
+    }
+
+    int dx2 = max.x - mid.x;
+    int dy2 = max.y - mid.y;
+    float s2 = (float)dy2 / dx2;
+
+    if(dx2 == 0){
+        for(int y = mid.y; y <= max.y; y++){
+            float color = vec3_mul_vec3(float)((vec3(float)){mid.x, y, 1}, colors_f);
+            frag->attributes._data[0] = color;
+            vec2(int) p = {mid.x, y};
+            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+        }
+    }
+
+
     // first triangle
+    if(dx0 != 0)
     for(int x = min.x; x <= mid.x; x++){
         int to = s0 > 0 ? s0 * (x - min.x) + min.y : s1 * (x - min.x) + min.y;
         int from = s0 < 0 ? s0 * (x - min.x) + min.y : s1 * (x - min.x) + min.y;
@@ -354,6 +476,7 @@ void _rdTriangle(vec2(int) p0, vec2(int) p1, vec2(int) p2, vec3(float) colors, R
     }
 
     // second triangle
+    if(dx2 != 0)
     for(int x = mid.x; x <= max.x; x++){
         int to = s2 > 0 ? s1 * (x - min.x) + min.y : s2 * (x - mid.x) + mid.y;
         int from = s2 < 0 ? s1 * (x - min.x) + min.y : s2 * (x - mid.x) + mid.y;
@@ -368,6 +491,7 @@ void _rdTriangle(vec2(int) p0, vec2(int) p1, vec2(int) p2, vec3(float) colors, R
 }
 
 // single
+// 2D
 void rdPoint2(const RdVertex2* v, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v = prog->vshader->shader(v, prog->vshader);
 
@@ -375,7 +499,7 @@ void rdPoint2(const RdVertex2* v, RdProgram2* prog, const RdScreen* s){
     prog->fshader->attributes._data[0] = v->color;
     _rdSetScreenPoint(&p, prog->fshader->shader(&p, prog->fshader), s);
 }
-void rdLine2(const RdVertex2* v0, const RdVertex2* v1, RdProgram2* prog, RdScreen* s){
+void rdLine2(const RdVertex2* v0, const RdVertex2* v1, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v0 = prog->vshader->shader(v0, prog->vshader);
     RdVertex3 new_v1 = prog->vshader->shader(v1, prog->vshader);
 
@@ -384,7 +508,7 @@ void rdLine2(const RdVertex2* v0, const RdVertex2* v1, RdProgram2* prog, RdScree
    
     _rdLine(p0, p1, (vec2(float)){new_v0.color, new_v1.color}, prog->fshader, s);
 }
-void rdTriangle2(const RdVertex2* v0, const RdVertex2* v1, const RdVertex2* v2, RdProgram2* prog, RdScreen* s){
+void rdTriangle2(const RdVertex2* v0, const RdVertex2* v1, const RdVertex2* v2, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v0 = prog->vshader->shader(v0, prog->vshader);
     RdVertex3 new_v1 = prog->vshader->shader(v1, prog->vshader);
     RdVertex3 new_v2 = prog->vshader->shader(v2, prog->vshader);
@@ -396,14 +520,74 @@ void rdTriangle2(const RdVertex2* v0, const RdVertex2* v1, const RdVertex2* v2, 
     _rdTriangle(p0, p1, p2, (vec3(float)){new_v0.color, new_v1.color, new_v2.color}, prog->fshader, s);
 }
 
+// 3D
+void rdPoint3(const RdVertex3* v, RdProgram3* prog, const RdScreen* s){
+    RdVertex4 new_v = prog->vshader->shader(v, prog->vshader);
+    vec3(float) pos = {new_v.position.x, new_v.position.y, new_v.position.z};
+
+    vec2(int) p = _rdGetScreenPoint(pos, s);
+    prog->fshader->attributes._data[0] = v->color;
+    _rdSetScreenPoint(&p, prog->fshader->shader(&p, prog->fshader), s);
+}
+void rdLine3(const RdVertex3* v0, const RdVertex3* v1, RdProgram3* prog, const RdScreen* s){
+    RdVertex4 new_v0 = prog->vshader->shader(v0, prog->vshader);
+    RdVertex4 new_v1 = prog->vshader->shader(v1, prog->vshader);
+
+    vec3(float) pos0 = {new_v0.position.x, new_v0.position.y, new_v0.position.z};
+    vec3(float) pos1 = {new_v1.position.x, new_v1.position.y, new_v1.position.z};
+
+    vec2(int) p0 = _rdGetScreenPoint(pos0, s);
+    vec2(int) p1 = _rdGetScreenPoint(pos1, s);
+   
+    _rdLine(p0, p1, (vec2(float)){new_v0.color, new_v1.color}, prog->fshader, s);
+}
+void rdTriangle3(const RdVertex3* v0, const RdVertex3* v1, const RdVertex3* v2, RdProgram3* prog, const RdScreen* s){
+    RdVertex4 new_v0 = prog->vshader->shader(v0, prog->vshader);
+    RdVertex4 new_v1 = prog->vshader->shader(v1, prog->vshader);
+    RdVertex4 new_v2 = prog->vshader->shader(v2, prog->vshader);
+
+    vec3(float) pos0 = {new_v0.position.x, new_v0.position.y, new_v0.position.z};
+    vec3(float) pos1 = {new_v1.position.x, new_v1.position.y, new_v1.position.z};
+    vec3(float) pos2 = {new_v2.position.x, new_v2.position.y, new_v2.position.z};
+
+    vec2(int) p0 = _rdGetScreenPoint(pos0, s);
+    vec2(int) p1 = _rdGetScreenPoint(pos1, s);
+    vec2(int) p2 = _rdGetScreenPoint(pos2, s);
+
+    _rdTriangle(p0, p1, p2, (vec3(float)){new_v0.color, new_v1.color, new_v2.color}, prog->fshader, s);
+}
+
 // multiple
+// 2D
 void rdPoints2(const RdVertex2* verts, size_t count, RdProgram2* prog, const RdScreen* s){
     // #pragma omp parallel for schedule(guided)
     for(size_t i = 0; i < count; i++) rdPoint2(verts + i, prog, s);
 }
 
-void rdLines2(const RdVertex2* verts, vec2(size_t)* indexes, size_t indexes_count, RdProgram2* prog, RdScreen* s){
+void rdLines2(const RdVertex2* verts, vec2(size_t)* indexes, size_t indexes_count, RdProgram2* prog, const RdScreen* s){
     // #pragma omp parallel for schedule(guided)
     for(size_t i = 0; i < indexes_count; i++)
         rdLine2(verts + indexes[i].x, verts + indexes[i].y, prog, s);
+}
+
+void rdTriangles2(const RdVertex2* verts,vec3(size_t)* indexes, size_t indexes_count, RdProgram2* prog, const RdScreen* s){
+    // #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < indexes_count; i++)
+        rdTriangle2(verts + indexes[i].x, verts + indexes[i].y, verts + indexes[i].z, prog, s);
+}
+
+// 3D
+void rdPoints3(const RdVertex3* verts, size_t count, RdProgram3* prog, const RdScreen* s){
+    // #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < count; i++) rdPoint3(verts + i, prog, s);
+}
+void rdLines3(const RdVertex3* verts, vec2(size_t)* indexes, size_t indexes_count, RdProgram3* prog, const RdScreen* s){
+    // #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < indexes_count; i++)
+        rdLine3(verts + indexes[i].x, verts + indexes[i].y, prog, s);
+}
+void rdTriangles3(const RdVertex3* verts,vec3(size_t)* indexes, size_t indexes_count, RdProgram3* prog, const RdScreen* s){
+    // #pragma omp parallel for schedule(guided)
+    for(size_t i = 0; i < indexes_count; i++)
+        rdTriangle3(verts + indexes[i].x, verts + indexes[i].y, verts + indexes[i].z, prog, s);
 }

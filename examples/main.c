@@ -3,17 +3,17 @@
 #include "renderer_ascii.h"
 
 
-RdVertex3 vshader(const RdVertex2* v, RdVertexShader2* shader){
-    mat3f_ptr scale = shader->matrices._data[0];
-    mat3f_ptr rotation = shader->matrices._data[1];
-    mat3f_ptr position = shader->matrices._data[2];
+RdVertex4 vshader(const RdVertex3* v, RdVertexShader3* shader){
+    mat4f_ptr scale = shader->matrices._data[0];
+    mat4f_ptr rotation = shader->matrices._data[1];
+    mat4f_ptr position = shader->matrices._data[2];
 
-    mat3(float) global = mat3_mul_mat3(float)(scale, rotation);
-    global = mat3_mul_mat3(float)(&global, position);
+    mat4(float) global = mat4_mul_mat4(float)(position, rotation);
+    global = mat4_mul_mat4(float)(&global, scale);
 
-    vec3(float) temp = mat3_mul_vec3(float)((vec3(float)){v->position.x, v->position.y, 1.0f}, &global);
+    vec4(float) temp = mat4_mul_vec4(float)((vec4(float)){v->position.x, v->position.y, v->position.z, 1.0f}, &global);
 
-    return (RdVertex3){temp, v->color};
+    return (RdVertex4){temp, v->color};
 }
 
 float fshader(const vec2(int)* p, RdFragmentShader* shader){
@@ -26,33 +26,67 @@ float fshader(const vec2(int)* p, RdFragmentShader* shader){
 int main(int argc, char* argv[]){
     // setup window
     RdScreen win = rdCreateScreen(atol(argv[1]), atol(argv[2]));
+    // RdScreen win = rdCreateScreen(31, 13);
     vec3(float) viewport = rdCreateViewportIdentity(&win);
     win.viewport = &viewport;
 
     // setup geometry
-    RdVertex2 verts[3] = {
-        (RdVertex2){0.0f, 1.0f, 0.25f},
-        (RdVertex2){-1.0f, -1.0f, 0.55f},
-        (RdVertex2){1.0f, -1.0f, 0.84f}
+    RdVertex3 verts[8] = {
+        {-1.0f, 1.0f, -1.0f, 0.44f},
+        {1.0f, 1.0f, -1.0f, 1.0f},
+        {-1.0f, 1.0f, 1.0f, 0.54f},
+        {1.0f, 1.0f, 1.0f, 0.91f},
+        {-1.0f, -1.0f, -1.0f, 0.1f},
+        {1.0f, -1.0f, -1.0f, 0.45f},
+        {-1.0f, -1.0f, 1.0f, 1.0f},
+        {1.0f, -1.0f, 1.0f, 0.7f}
     };
-    vec2(size_t) indexes[3] = {
-        (vec2(size_t)){0, 1},
-        (vec2(size_t)){1, 2},
-        (vec2(size_t)){2, 0}
+
+    vec3(size_t) indexes[12] = {
+        {2, 6, 7},
+        {7, 3, 2},
+        {0, 4, 5},
+        {5, 1, 0},
+
+        {0, 4, 6},
+        {6, 2, 0},
+        {1, 5, 7},
+        {7, 3, 1},
+
+        {0, 1, 3},
+        {3, 2, 0},
+        {4, 5, 7},
+        {7, 6, 4}
     };
+
+    vec2(size_t) indexes_lines[12] = {
+        {0, 1},
+        {0, 2},
+        {0, 4},
+        {1, 3},
+        {1, 5},
+        {2, 3},
+        {2, 6},
+        {3, 7},
+        {4, 5},
+        {4, 6},
+        {5, 7},
+        {6, 7}
+    };
+
 
     // setup matrices
-    mat3(float) transpose = mat3_identity(float);
-    mat3(float) rotate = mat3_identity(float);
-    mat3(float) scale = mat3_identity(float);
+    mat4(float) transpose = mat4_identity(float);
+    mat4(float) rotate = mat4_identity(float);
+    mat4(float) scale = mat4_identity(float);
 
-    std_small_vector(mat3f_ptr) pos = std_small_vector_default(mat3f_ptr);
+    std_small_vector(mat4f_ptr) pos = std_small_vector_default(mat4f_ptr);
     pos.push_back(&pos, &scale);
     pos.push_back(&pos, &rotate);
     pos.push_back(&pos, &transpose);
 
     // setup shaders
-    RdVertexShader2 vsh = {
+    RdVertexShader3 vsh = {
         vshader,
         pos
     };
@@ -62,17 +96,17 @@ int main(int argc, char* argv[]){
     };
     fsh.attributes.push_back(&fsh.attributes, 0.0f);
 
-    RdProgram2 prog = {&vsh, &fsh};
+    RdProgram3 prog = {&vsh, &fsh};
 
     // render
-    rdScale2((vec2(float)){0.5f, 0.5f}, &scale);
+    rdTranslate3((vec3(float)){0, 0, 3}, &transpose);
 
-    for(float i = 0; i < 180; i += 0.05f){
-        rdRotate2(i, &rotate);
+    for(float i = 0; i <= 420; i += 0.1f){
+        rdRotate3((vec3(float)){0, 1, 0}, i,  &rotate);
 
         rdClear(&win);
-        rdTriangle2(verts, verts + 1, verts + 2, &prog, &win);
-        // rdLines2(verts, indexes, 3, &prog, &win);
+        // rdLines3(verts, indexes_lines, 12, &prog, &win);
+        rdTriangles3(verts, indexes, 12, &prog, &win);
         rdDRender(&win);
     }
     rdRender(&win);
