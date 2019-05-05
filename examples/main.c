@@ -7,20 +7,18 @@
 LINEAR(float)
 
 int main(){
-    mat2(float) A = {{
-        {1, 2},
-        {3, 4}
-    }};
-    mat2(float) B = {{
-        {5, 6},
-        {7, 8}
-    }};
+    vec3(float) x = {0, 1, 2};
+    vec3(float) y = {-1, 0, 2};
+    vec3(float) z = {-5, 3, 4};
 
-    auto C = mat2_div_mat2(float)(&A, &B);
-    printf("%f %f\n%f %f\n",
-        C.m[0][0], C.m[0][1],
-        C.m[1][0], C.m[1][1]
-    );
+    vec3(float) f = lininter2(float)(x, y, z);
+
+    for(float x = 0; x <= 2; x++){
+        for(float y = -1; y <= 2; y++){
+            float z = vec3_mul_vec3(float)((vec3(float)){x, y, 1}, f);
+            printf("%f\n", z);
+        }
+    }
 
     return 0;
 }

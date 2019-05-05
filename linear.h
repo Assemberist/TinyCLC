@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -109,7 +111,7 @@ mat2(T) _cat(_cat(mat2(T), _mul_), mat2(T))(const mat2(T)* m0, const mat2(T)* m1
     result.m[1][1] = m0->m[1][0] * m1->m[0][1] + m0->m[1][1] * m1->m[1][1];\
     return result;\
 }\
-mat2(T) _cat(mat2(T), _mul_scalar_)(const mat2(T)* m, T val){\
+mat2(T) _cat(mat2(T), _mul_scalar_)(const mat2(T)* m, const T val){\
     mat2(T) result;\
     result.m[0][0] = m->m[0][0] * val;\
     result.m[0][1] = m->m[0][1] * val;\
@@ -119,12 +121,16 @@ mat2(T) _cat(mat2(T), _mul_scalar_)(const mat2(T)* m, T val){\
 }\
 mat2(T) _cat(mat2(T), _inverse_)(const mat2(T)* m){\
     mat2(T) result;\
-    T det = (T)1 / (m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1]);\
+    T det = m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1];\
+    if(det == 0){\
+        fprintf(stderr, "linear [inverse2]: matrix is singular");\
+        exit(EXIT_FAILURE);\
+    }\
     result.m[0][0] = m->m[1][1];\
     result.m[0][1] = -m->m[0][1];\
     result.m[1][0] = -m->m[1][0];\
     result.m[1][1] = m->m[0][0];\
-    return mat2_mul_scalar(T)(&result, det);\
+    return mat2_mul_scalar(T)(&result, (T)1 / det);\
 }\
 mat2(T) _cat(_cat(mat2(T), _div_), mat2(T))(const mat2(T)* m0, const mat2(T)* m1){\
     mat2(T) temp = mat2_inverse(T)(m1);\
@@ -138,24 +144,88 @@ vec2(T) _cat(_lininter_, T)(const vec2(T) x, const vec2(T) y){\
     mat2(T) temp = mat2_inverse(T)(&temp0);\
     return vec2_mul_mat2(T)(y, &temp);\
 }\
-T _cat(vec3(T), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+vec3(T) _cat(_cat(vec3(T), _add_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+    return (vec3(T)){v0.x + v1.x, v0.y + v1.y, v0.z + v1.z};\
+}\
+vec3(T) _cat(_cat(vec3(T), _sub_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+    return (vec3(T)){v0.x - v1.x, v0.y - v1.y, v0.z - v1.z};\
+}\
+vec3(T) _cat(_cat(vec3(T), _hadmul_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+    return (vec3(T)){v0.x * v1.x, v0.y * v1.y, v0.z * v1.z};\
+}\
+vec3(T) _cat(_cat(vec3(T), _haddiv_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+    return (vec3(T)){v0.x / v1.x, v0.y / v1.y, v0.z / v1.z};\
+}\
+T _cat(_cat(vec3(T), _mul_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
     return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;\
 }\
-vec3(T) _cat(vec3(T), mat3(T))(const vec3(T) v, const mat3(T)* m){\
+vec3(T) _cat(_cat(vec3(T), _mul_), mat3(T))(const vec3(T) v, const mat3(T)* m){\
     vec3(T) result;\
     result.x = v.x * m->m[0][0] + v.y * m->m[1][0] + v.z * m->m[2][0];\
     result.y = v.x * m->m[0][1] + v.y * m->m[1][1] + v.z * m->m[2][1];\
     result.z = v.x * m->m[0][2] + v.y * m->m[1][2] + v.z * m->m[2][2];\
     return result;\
 }\
-vec3(T) _cat(mat3(T), vec3(T))(const vec3(T) v, const mat3(T)* m){\
+vec3(T) _cat(_cat(mat3(T), _mul_), vec3(T))(const vec3(T) v, const mat3(T)* m){\
     vec3(T) result;\
     result.x = m->m[0][0] * v.x + m->m[0][1] * v.y + m->m[0][2] * v.z;\
     result.y = m->m[1][0] * v.x + m->m[1][1] * v.y + m->m[1][2] * v.z;\
     result.z = m->m[2][0] * v.x + m->m[2][1] * v.y + m->m[2][2] * v.z;\
     return result;\
 }\
-mat3(T) _cat(mat3(T), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+mat3(T) _cat(_cat(mat3(T), _add_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+    mat3(T) result;\
+    result.m[0][0] = m0->m[0][0] + m1->m[0][0];\
+    result.m[0][1] = m0->m[0][1] + m1->m[0][1];\
+    result.m[0][2] = m0->m[0][2] + m1->m[0][2];\
+    result.m[1][0] = m0->m[1][0] + m1->m[1][0];\
+    result.m[1][1] = m0->m[1][1] + m1->m[1][1];\
+    result.m[1][2] = m0->m[1][2] + m1->m[1][2];\
+    result.m[2][0] = m0->m[2][0] + m1->m[2][0];\
+    result.m[2][1] = m0->m[2][1] + m1->m[2][1];\
+    result.m[2][2] = m0->m[2][2] + m1->m[2][2];\
+    return result;\
+}\
+mat3(T) _cat(_cat(mat3(T), _sub_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+    mat3(T) result;\
+    result.m[0][0] = m0->m[0][0] - m1->m[0][0];\
+    result.m[0][1] = m0->m[0][1] - m1->m[0][1];\
+    result.m[0][2] = m0->m[0][2] - m1->m[0][2];\
+    result.m[1][0] = m0->m[1][0] - m1->m[1][0];\
+    result.m[1][1] = m0->m[1][1] - m1->m[1][1];\
+    result.m[1][2] = m0->m[1][2] - m1->m[1][2];\
+    result.m[2][0] = m0->m[2][0] - m1->m[2][0];\
+    result.m[2][1] = m0->m[2][1] - m1->m[2][1];\
+    result.m[2][2] = m0->m[2][2] - m1->m[2][2];\
+    return result;\
+}\
+mat3(T) _cat(_cat(mat3(T), _hadmul_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+    mat3(T) result;\
+    result.m[0][0] = m0->m[0][0] * m1->m[0][0];\
+    result.m[0][1] = m0->m[0][1] * m1->m[0][1];\
+    result.m[0][2] = m0->m[0][2] * m1->m[0][2];\
+    result.m[1][0] = m0->m[1][0] * m1->m[1][0];\
+    result.m[1][1] = m0->m[1][1] * m1->m[1][1];\
+    result.m[1][2] = m0->m[1][2] * m1->m[1][2];\
+    result.m[2][0] = m0->m[2][0] * m1->m[2][0];\
+    result.m[2][1] = m0->m[2][1] * m1->m[2][1];\
+    result.m[2][2] = m0->m[2][2] * m1->m[2][2];\
+    return result;\
+}\
+mat3(T) _cat(_cat(mat3(T), _haddiv_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+    mat3(T) result;\
+    result.m[0][0] = m0->m[0][0] / m1->m[0][0];\
+    result.m[0][1] = m0->m[0][1] / m1->m[0][1];\
+    result.m[0][2] = m0->m[0][2] / m1->m[0][2];\
+    result.m[1][0] = m0->m[1][0] / m1->m[1][0];\
+    result.m[1][1] = m0->m[1][1] / m1->m[1][1];\
+    result.m[1][2] = m0->m[1][2] / m1->m[1][2];\
+    result.m[2][0] = m0->m[2][0] / m1->m[2][0];\
+    result.m[2][1] = m0->m[2][1] / m1->m[2][1];\
+    result.m[2][2] = m0->m[2][2] / m1->m[2][2];\
+    return result;\
+}\
+mat3(T) _cat(_cat(mat3(T), _mul_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
     mat3(T) result;\
     result.m[0][0] = m0->m[0][0] * m1->m[0][0] + m0->m[0][1] * m1->m[1][0] + m0->m[0][2] * m1->m[2][0];\
     result.m[0][1] = m0->m[0][0] * m1->m[0][1] + m0->m[0][1] * m1->m[1][1] + m0->m[0][2] * m1->m[2][1];\
@@ -168,10 +238,54 @@ mat3(T) _cat(mat3(T), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
     result.m[2][2] = m0->m[2][0] * m1->m[0][2] + m0->m[2][1] * m1->m[1][2] + m0->m[2][2] * m1->m[2][2];\
     return result;\
 }\
-T _cat(vec4(T), vec4(T))(const vec4(T) v0, const vec4(T) v1){\
+mat3(T) _cat(mat3(T), _mul_scalar_)(const mat3(T)* m0, const T val){\
+    mat3(T) result;\
+    result.m[0][0] = m0->m[0][0] * val;\
+    result.m[0][1] = m0->m[0][1] * val;\
+    result.m[0][2] = m0->m[0][2] * val;\
+    result.m[1][0] = m0->m[1][0] * val;\
+    result.m[1][1] = m0->m[1][1] * val;\
+    result.m[1][2] = m0->m[1][2] * val;\
+    result.m[2][0] = m0->m[2][0] * val;\
+    result.m[2][1] = m0->m[2][1] * val;\
+    result.m[2][2] = m0->m[2][2] * val;\
+    return result;\
+}\
+mat3(T) _cat(mat3(T), _inverse_)(const mat3(T)* m){\
+    mat3(T) result;\
+    T det = m->m[0][0] * (m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1]) + m->m[0][1] * (m->m[1][2] * m->m[2][0] - m->m[1][0] * m->m[2][2]) + m->m[0][2] * (m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0]);\
+    if(det == 0){\
+        fprintf(stderr, "linear [inverse3]: matrix is singular\n");\
+        exit(EXIT_FAILURE);\
+    }\
+    result.m[0][0] = m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1];\
+    result.m[0][1] = m->m[0][2] * m->m[2][1] - m->m[0][1] * m->m[2][2];\
+    result.m[0][2] = m->m[0][1] * m->m[1][2] - m->m[0][2] * m->m[1][1];\
+    result.m[1][0] = m->m[1][2] * m->m[2][0] - m->m[1][0] * m->m[2][2];\
+    result.m[1][1] = m->m[0][0] * m->m[2][2] - m->m[0][2] * m->m[2][0];\
+    result.m[1][2] = m->m[0][2] * m->m[1][0] - m->m[0][0] * m->m[1][2];\
+    result.m[2][0] = m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0];\
+    result.m[2][1] = m->m[0][1] * m->m[2][0] - m->m[0][0] * m->m[2][1];\
+    result.m[2][2] = m->m[0][0] * m->m[1][1] - m->m[0][1] * m->m[1][0];\
+    return mat3_mul_scalar(T)(&result, (T)1 / det);\
+}\
+mat3(T) _cat(_cat(mat3(T), _div_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
+    mat3(T) temp = mat3_inverse(T)(m1);\
+    return mat3_mul_mat3(T)(m0, &temp);\
+}\
+vec3(T) _cat(_lininter2_, T)(const vec3(T) x, const vec3(T) y, const vec3(T) z){\
+    mat3(T) temp0 = {{\
+        {x.x, x.y, x.z},\
+        {y.x, y.y, y.z},\
+        {1, 1, 1}\
+    }};\
+    mat3(T) temp = mat3_inverse(T)(&temp0);\
+    return vec3_mul_mat3(T)(z, &temp);\
+}\
+T _cat(_cat(vec4(T), _mul_), vec4(T))(const vec4(T) v0, const vec4(T) v1){\
     return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z + v0.w * v1.w;\
 }\
-vec4(T) _cat(vec4(T), mat4(T))(const vec4(T) v, const mat4(T)* m){\
+vec4(T) _cat(_cat(vec4(T), _mul_), mat4(T))(const vec4(T) v, const mat4(T)* m){\
     vec4(T) result;\
     result.x = v.x * m->m[0][0] + v.y * m->m[1][0] + v.z * m->m[2][0] + v.w * m->m[3][0];\
     result.y = v.x * m->m[0][1] + v.y * m->m[1][1] + v.z * m->m[2][1] + v.w * m->m[3][1];\
@@ -179,7 +293,7 @@ vec4(T) _cat(vec4(T), mat4(T))(const vec4(T) v, const mat4(T)* m){\
     result.w = v.x * m->m[0][3] + v.y * m->m[1][3] + v.z * m->m[2][3] + v.w * m->m[3][3];\
     return result;\
 }\
-vec4(T) _cat(mat4(T), vec4(T))(const vec4(T) v, const mat4(T)* m){\
+vec4(T) _cat(_cat(mat4(T), _mul_), vec4(T))(const vec4(T) v, const mat4(T)* m){\
     vec4(T) result;\
     result.x = m->m[0][0] * v.x + m->m[0][1] * v.y + m->m[0][2] * v.z + m->m[0][3] * v.w;\
     result.y = m->m[1][0] * v.x + m->m[1][1] * v.y + m->m[1][2] * v.z + m->m[1][3] * v.w;\
@@ -187,7 +301,7 @@ vec4(T) _cat(mat4(T), vec4(T))(const vec4(T) v, const mat4(T)* m){\
     result.w = m->m[3][0] * v.x + m->m[3][1] * v.y + m->m[3][2] * v.z + m->m[3][3] * v.w;\
     return result;\
 }\
-mat4(T) _cat(mat4(T), mat4(T))(const mat4(T)* m0, const mat4(T)* m1){\
+mat4(T) _cat(_cat(mat4(T), _mul_), mat4(T))(const mat4(T)* m0, const mat4(T)* m1){\
     mat4(T) result;\
     result.m[0][0] = m0->m[0][0] * m1->m[0][0] + m0->m[0][1] * m1->m[1][0] + m0->m[0][2] * m1->m[2][0] + m0->m[0][3] * m1->m[3][0];\
     result.m[0][1] = m0->m[0][0] * m1->m[0][1] + m0->m[0][1] * m1->m[1][1] + m0->m[0][2] * m1->m[2][1] + m0->m[0][3] * m1->m[3][1];\
@@ -215,6 +329,7 @@ mat4(T) _cat(mat4(T), mat4(T))(const mat4(T)* m0, const mat4(T)* m1){\
 #define vec2_hadmul_vec2(T) _cat(_cat(vec2(T), _hadmul_), vec2(T))
 #define vec2_haddiv_vec2(T) _cat(_cat(vec2(T), _haddiv_), vec2(T))
 #define vec2_mul_vec2(T) _cat(_cat(vec2(T), _mul_), vec2(T))
+
 #define vec2_mul_mat2(T) _cat(_cat(vec2(T), _mul_), mat2(T))
 #define mat2_mul_vec2(T) _cat(_cat(mat2(T), _mul_), vec2(T))
 #define mat2_add_mat2(T) _cat(_cat(mat2(T), _add_), mat2(T))
@@ -227,15 +342,28 @@ mat4(T) _cat(mat4(T), mat4(T))(const mat4(T)* m0, const mat4(T)* m1){\
 #define mat2_div_mat2(T) _cat(_cat(mat2(T), _div_), mat2(T))
 #define lininter(T) _cat(_lininter_, T)
 
-#define vec3vec3(T) _cat(vec3(T), vec3(T))
-#define vec3mat3(T) _cat(vec3(T), mat3(T))
-#define mat3vec3(T) _cat(mat3(T), vec3(T))
-#define mat3mat3(T) _cat(mat3(T), mat3(T))
+#define vec3_add_vec3(T) _cat(_cat(vec3(T), _add_), vec3(T))
+#define vec3_sub_vec3(T) _cat(_cat(vec3(T), _sub_), vec3(T))
+#define vec3_hadmul_vec3(T) _cat(_cat(vec3(T), _hadmul_), vec3(T))
+#define vec3_haddiv_vec3(T) _cat(_cat(vec3(T), _haddiv_), vec3(T))
+#define vec3_mul_vec3(T) _cat(_cat(vec3(T), _mul_), vec3(T))
 
-#define vec4vec4(T) _cat(vec4(T), vec4(T))
-#define vec4mat4(T) _cat(vec4(T), mat4(T))
-#define mat4vec4(T) _cat(mat4(T), vec4(T))
-#define mat4mat4(T) _cat(mat4(T), mat4(T))
+#define vec3_mul_mat3(T) _cat(_cat(vec3(T), _mul_), mat3(T))
+#define mat3_mul_vec3(T) _cat(_cat(mat3(T), _mul_), vec3(T))
+#define mat3_add_mat3(T) _cat(_cat(mat3(T), _add_), mat3(T))
+#define mat3_sub_mat3(T) _cat(_cat(mat3(T), _sub_), mat3(T))
+#define mat3_hadmul_mat3(T) _cat(_cat(mat3(T), _hadmul_), mat3(T))
+#define mat3_haddiv_mat3(T) _cat(_cat(mat3(T), _haddiv_), mat3(T))
+#define mat3_mul_mat3(T) _cat(_cat(mat3(T), _mul_), mat3(T))
+#define mat3_mul_scalar(T) _cat(mat3(T), _mul_scalar_)
+#define mat3_inverse(T) _cat(mat3(T), _inverse_)
+#define mat3_div_mat3(T) _cat(_cat(mat3(T), _div_), mat3(T))
+#define lininter2(T) _cat(_lininter2_, T)
+
+#define vec4_mul_vec4(T) _cat(_cat(vec4(T), _mul_), vec4(T))
+#define vec4_mul_mat4(T) _cat(_cat(vec4(T), _mul_), mat4(T))
+#define mat4_mul_vec4(T) _cat(_cat(mat4(T), _mul_), vec4(T))
+#define mat4_mul_mat4(T) _cat(_cat(mat4(T), _mul_), mat4(T))
 
 
 #define mat2_identity(T) (mat2(T)){{\
