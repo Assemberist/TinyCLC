@@ -268,6 +268,8 @@ void rdDRender(const RdScreen* s){
     printf("\e[?25h"); // enable cursor
 }
 
+// hidden
+
 // single
 void rdPoint2(const RdVertex2* v, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v = prog->vshader->shader(v, prog->vshader);
