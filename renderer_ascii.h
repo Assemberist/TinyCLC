@@ -392,7 +392,17 @@ void rdDRender(const RdScreen* s){
 }
 
 // hidden
+void _rdPoint(vec2(int)p, float color, RdFragmentShader* frag, const RdScreen* s){
+    frag->attributes._data[0] = color;
+    _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+}
+
 void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* frag, const RdScreen* s){
+    if(p0.x == p1.x && p0.y == p1.y){
+        _rdPoint(p0, (colors.x + colors.y) / 2, frag, s);
+        return;
+    }
+    
     int dx = p1.x - p0.x;
     int dy = p1.y - p0.y;
     size_t max = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
@@ -408,84 +418,75 @@ void _rdLine(vec2(int) p0, vec2(int) p1, vec2(float) colors, RdFragmentShader* f
         vec2(int) p = {p0.x + i * step_x, p0.y + i * step_y};
 
         float color = vec2_mul_vec2(float)((vec2(float)){i, 1}, colors_f);
-        frag->attributes._data[0] = color;
-        _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+        _rdPoint(p, color, frag, s);
     }
 }
+
 void _rdTriangle(vec2(int) p0, vec2(int) p1, vec2(int) p2, vec3(float) colors, RdFragmentShader* frag, const RdScreen* s){
     vec2(int) min = _rdMinScreenPoint(_rdMinScreenPoint(p0, p1, false), p2, false);
     vec2(int) mid = _rdMidScreenPoint(p0, p1, p2, false);
     vec2(int) max = _rdMaxScreenPoint(_rdMaxScreenPoint(p0, p1, false), p2, false);
 
-    vec3(float) colors_x = (vec3(float)){p0.x, p1.x, p2.x};
-    vec3(float) colors_y = (vec3(float)){p0.y, p1.y, p2.y};
-    vec3(float) colors_f = lininter2(float)(colors_x, colors_y, colors);
-
     int dx0 = mid.x - min.x;
     int dy0 = mid.y - min.y;
     float s0 = (float)dy0 / dx0;
-
-    if(dx0 == 0){
-        for(int y = min.y; y <= mid.y; y++){
-            float color = vec3_mul_vec3(float)((vec3(float)){min.x, y, 1}, colors_f);
-            frag->attributes._data[0] = color;
-            vec2(int) p = {min.x, y};
-            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
-        }
-    }
 
     int dx1 = max.x - min.x;
     int dy1 = max.y - min.y;
     float s1 = (float)dy1 / dx1;
 
-    if(dx1 == 0){
-        for(int y = min.y; y <= max.y; y++){
-            float color = vec3_mul_vec3(float)((vec3(float)){min.x, y, 1}, colors_f);
-            frag->attributes._data[0] = color;
-            vec2(int) p = {min.x, y};
-            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
-        }
-    }
-
     int dx2 = max.x - mid.x;
     int dy2 = max.y - mid.y;
     float s2 = (float)dy2 / dx2;
 
-    if(dx2 == 0){
-        for(int y = mid.y; y <= max.y; y++){
-            float color = vec3_mul_vec3(float)((vec3(float)){mid.x, y, 1}, colors_f);
-            frag->attributes._data[0] = color;
-            vec2(int) p = {mid.x, y};
-            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
-        }
+
+    if(dx0 * dy1 - dx1 * dy0 == 0){
+        _rdLine(min, mid, (vec2(float)){colors.x, colors.y}, frag, s);
+        _rdLine(mid, max, (vec2(float)){colors.y, colors.z}, frag, s);
+        return;
     }
 
+    if(dx0 == 0)
+        _rdLine(min, mid, (vec2(float)){colors.x, colors.y}, frag, s);
+    else if(dx1 == 0)
+        _rdLine(min, max, (vec2(float)){colors.x, colors.z}, frag, s);
+    if(dx2 == 0)
+        _rdLine(mid, max, (vec2(float)){colors.y, colors.z}, frag, s);
+
+
+    vec3(float) colors_x = (vec3(float)){p0.x, p1.x, p2.x};
+    vec3(float) colors_y = (vec3(float)){p0.y, p1.y, p2.y};
+    vec3(float) colors_f = lininter2(float)(colors_x, colors_y, colors);
 
     // first triangle
     if(dx0 != 0)
     for(int x = min.x; x <= mid.x; x++){
-        int to = s0 > 0 ? s0 * (x - min.x) + min.y : s1 * (x - min.x) + min.y;
-        int from = s0 < 0 ? s0 * (x - min.x) + min.y : s1 * (x - min.x) + min.y;
+        int y0 = s0 * (x - min.x) + min.y;
+        int y1 = s1 * (x - min.x) + min.y;
+
+        int from = y0 <= y1 ? y0 : y1;
+        int to = y0 > y1 ? y0 : y1;
         
         for(int y = from; y <= to; y++){
             float color = vec3_mul_vec3(float)((vec3(float)){x, y, 1}, colors_f);
-            frag->attributes._data[0] = color;
             vec2(int) p = {x, y};
-            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+            _rdPoint(p, color, frag, s);
         }
     }
 
     // second triangle
     if(dx2 != 0)
     for(int x = mid.x; x <= max.x; x++){
-        int to = s2 > 0 ? s1 * (x - min.x) + min.y : s2 * (x - mid.x) + mid.y;
-        int from = s2 < 0 ? s1 * (x - min.x) + min.y : s2 * (x - mid.x) + mid.y;
+        int y0 = s1 * (x - min.x) + min.y;
+        int y1 = s2 * (x - mid.x) + mid.y;
+
+        int from = y0 <= y1 ? y0 : y1;
+        int to = y0 > y1 ? y0 : y1;
         
         for(int y = from; y <= to; y++){
             float color = vec3_mul_vec3(float)((vec3(float)){x, y, 1}, colors_f);
-            frag->attributes._data[0] = color;
             vec2(int) p = {x, y};
-            _rdSetScreenPoint(&p, frag->shader(&p, frag), s);
+            _rdPoint(p, color, frag, s);
         } 
     }
 }
@@ -496,8 +497,7 @@ void rdPoint2(const RdVertex2* v, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v = prog->vshader->shader(v, prog->vshader);
 
     vec2(int) p = _rdGetScreenPoint(new_v.position, s);
-    prog->fshader->attributes._data[0] = v->color;
-    _rdSetScreenPoint(&p, prog->fshader->shader(&p, prog->fshader), s);
+    _rdPoint(p, v->color, prog->fshader, s);
 }
 void rdLine2(const RdVertex2* v0, const RdVertex2* v1, RdProgram2* prog, const RdScreen* s){
     RdVertex3 new_v0 = prog->vshader->shader(v0, prog->vshader);
@@ -526,8 +526,7 @@ void rdPoint3(const RdVertex3* v, RdProgram3* prog, const RdScreen* s){
     vec3(float) pos = {new_v.position.x, new_v.position.y, new_v.position.z};
 
     vec2(int) p = _rdGetScreenPoint(pos, s);
-    prog->fshader->attributes._data[0] = v->color;
-    _rdSetScreenPoint(&p, prog->fshader->shader(&p, prog->fshader), s);
+    _rdPoint(p, v->color, prog->fshader, s);
 }
 void rdLine3(const RdVertex3* v0, const RdVertex3* v1, RdProgram3* prog, const RdScreen* s){
     RdVertex4 new_v0 = prog->vshader->shader(v0, prog->vshader);

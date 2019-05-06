@@ -101,7 +101,7 @@ int main(int argc, char* argv[]){
     // render
     rdTranslate3((vec3(float)){0, 0, 3}, &transpose);
 
-    for(float i = 0; i <= 420; i += 0.1f){
+    for(float i = 0; i <= 360; i += 0.1f){
         rdRotate3((vec3(float)){0, 1, 0}, i,  &rotate);
 
         rdClear(&win);

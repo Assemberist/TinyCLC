@@ -122,6 +122,10 @@ mat2(T) _cat(mat2(T), _mul_scalar_)(const mat2(T)* m, const T val){\
 mat2(T) _cat(mat2(T), _inverse_)(const mat2(T)* m){\
     mat2(T) result;\
     T det = m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1];\
+    if(det == 0){\
+        fprintf(stderr, "linear [inverse2]: matrix is singular\n");\
+        exit(EXIT_FAILURE);\
+    }\
     result.m[0][0] = m->m[1][1];\
     result.m[0][1] = -m->m[0][1];\
     result.m[1][0] = -m->m[1][0];\
@@ -250,6 +254,10 @@ mat3(T) _cat(mat3(T), _mul_scalar_)(const mat3(T)* m0, const T val){\
 mat3(T) _cat(mat3(T), _inverse_)(const mat3(T)* m){\
     mat3(T) result;\
     T det = m->m[0][0] * (m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1]) + m->m[0][1] * (m->m[1][2] * m->m[2][0] - m->m[1][0] * m->m[2][2]) + m->m[0][2] * (m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0]);\
+    if(det == 0){\
+        fprintf(stderr, "linear [inverse3]: matrix is singular\n");\
+        exit(EXIT_FAILURE);\
+    }\
     result.m[0][0] = m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1];\
     result.m[0][1] = m->m[0][2] * m->m[2][1] - m->m[0][1] * m->m[2][2];\
     result.m[0][2] = m->m[0][1] * m->m[1][2] - m->m[0][2] * m->m[1][1];\
