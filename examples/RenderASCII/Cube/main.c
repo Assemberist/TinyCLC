@@ -43,20 +43,29 @@ int main(int argc, char* argv[]){
     };
 
     vec3(size_t) indexes[12] = {
-        {2, 6, 7},
-        {7, 3, 2},
+        // back
+        {2, 3, 7},
+        {7, 6, 2},
+        
+        // front
         {0, 4, 5},
         {5, 1, 0},
 
-        {0, 4, 6},
-        {6, 2, 0},
-        {1, 5, 7},
-        {7, 3, 1},
+        // left
+        {6, 4, 0},
+        {0, 2, 6},
 
+        // right
+        {5, 7, 3},
+        {3, 1, 5},
+
+        // up
         {0, 1, 3},
         {3, 2, 0},
-        {4, 5, 7},
-        {7, 6, 4}
+
+        // down
+        {7, 5, 4},
+        {4, 6, 7}
     };
 
     vec2(size_t) indexes_lines[12] = {
@@ -102,7 +111,7 @@ int main(int argc, char* argv[]){
     rdTranslate3((vec3(float)){0, 0, 3}, &transpose);
 
     for(float i = 0; i <= 360; i += 0.1f){
-        rdRotate3((vec3(float)){0, 1, 0}, i,  &rotate);
+        rdRotate3((vec3(float)){1, 1, 0}, i,  &rotate);
 
         rdClear(&win);
         // rdLines3(verts, indexes_lines, 12, &prog, &win);

@@ -36,6 +36,7 @@ else if(X > 1.0f) X = 1.0f;
 
 // #define RD_DEBUG
 // #define RD_SHOW_GRID
+#define RD_CULL_FACES
 // #define RD_WHITE_BACK
 
 /////////////////////////////////////////////////////
@@ -164,6 +165,15 @@ vec2(int) _rdMidScreenPoint(const vec2(int) p0, const vec2(int) p1, const vec2(i
     if((p0.x != min.x || p0.y != min.y) && (p0.x != max.x || p0.y != max.y)) return p0;
     else if((p1.x != min.x || p1.y != min.y) && (p1.x != max.x || p1.y != max.y)) return p1;
     return p2;
+}
+
+bool _rdCullFace(const vec3(float) v0, const vec3(float) v1, const vec3(float) v2){
+    vec3(float) temp0 = vec3_sub_vec3(float)(v1, v0);
+    vec3(float) temp1 = vec3_sub_vec3(float)(v2, v0);
+    vec3(float) norm = vec3_cross_vec3(float)(temp0, temp1);
+
+    if(-vec3_mul_vec3(float)(v0, norm) >= 0) return true;
+    return false;
 }
 
 // 2D
@@ -548,6 +558,10 @@ void rdTriangle3(const RdVertex3* v0, const RdVertex3* v1, const RdVertex3* v2, 
     vec3(float) pos0 = {new_v0.position.x, new_v0.position.y, new_v0.position.z};
     vec3(float) pos1 = {new_v1.position.x, new_v1.position.y, new_v1.position.z};
     vec3(float) pos2 = {new_v2.position.x, new_v2.position.y, new_v2.position.z};
+
+    #ifdef RD_CULL_FACES
+    if(_rdCullFace(pos0, pos1, pos2)) return;
+    #endif
 
     vec2(int) p0 = _rdGetScreenPoint(pos0, s);
     vec2(int) p1 = _rdGetScreenPoint(pos1, s);

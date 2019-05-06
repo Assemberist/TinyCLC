@@ -159,6 +159,13 @@ vec3(T) _cat(_cat(vec3(T), _haddiv_), vec3(T))(const vec3(T) v0, const vec3(T) v
 T _cat(_cat(vec3(T), _mul_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
     return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;\
 }\
+vec3(T) _cat(_cat(vec3(T), _cross_), vec3(T))(const vec3(T) v0, const vec3(T) v1){\
+    vec3(T) result;\
+    result.x = v0.y * v1.z - v0.z * v1.y;\
+    result.y = v0.z * v1.x - v0.x * v1.z;\
+    result.z = v0.x * v1.y - v0.y * v1.x;\
+    return result;\
+}\
 vec3(T) _cat(_cat(vec3(T), _mul_), mat3(T))(const vec3(T) v, const mat3(T)* m){\
     vec3(T) result;\
     result.x = v.x * m->m[0][0] + v.y * m->m[1][0] + v.z * m->m[2][0];\
@@ -347,6 +354,7 @@ mat4(T) _cat(_cat(mat4(T), _mul_), mat4(T))(const mat4(T)* m0, const mat4(T)* m1
 #define vec3_hadmul_vec3(T) _cat(_cat(vec3(T), _hadmul_), vec3(T))
 #define vec3_haddiv_vec3(T) _cat(_cat(vec3(T), _haddiv_), vec3(T))
 #define vec3_mul_vec3(T) _cat(_cat(vec3(T), _mul_), vec3(T))
+#define vec3_cross_vec3(T) _cat(_cat(vec3(T), _cross_), vec3(T))
 
 #define vec3_mul_mat3(T) _cat(_cat(vec3(T), _mul_), mat3(T))
 #define mat3_mul_vec3(T) _cat(_cat(mat3(T), _mul_), vec3(T))
