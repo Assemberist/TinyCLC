@@ -32,14 +32,14 @@ int main(int argc, char* argv[]){
 
     // setup geometry
     RdVertex3 verts[8] = {
-        {-1.0f, 1.0f, -1.0f, 0.44f},
+        {-1.0f, 1.0f, -1.0f, 1.0f},
         {1.0f, 1.0f, -1.0f, 1.0f},
-        {-1.0f, 1.0f, 1.0f, 0.54f},
-        {1.0f, 1.0f, 1.0f, 0.91f},
-        {-1.0f, -1.0f, -1.0f, 0.1f},
+        {-1.0f, 1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f, 1.0f},
+        {-1.0f, -1.0f, -1.0f, 0.45f},
         {1.0f, -1.0f, -1.0f, 0.45f},
-        {-1.0f, -1.0f, 1.0f, 1.0f},
-        {1.0f, -1.0f, 1.0f, 0.7f}
+        {-1.0f, -1.0f, 1.0f, 0.45f},
+        {1.0f, -1.0f, 1.0f, 0.45f}
     };
 
     vec3(size_t) indexes[12] = {
@@ -108,10 +108,10 @@ int main(int argc, char* argv[]){
     RdProgram3 prog = {&vsh, &fsh};
 
     // render
-    rdTranslate3((vec3(float)){0, 0, 3}, &transpose);
+    rdTranslate3((vec3(float)){0, 0, 2.75}, &transpose);
 
-    for(float i = 0; i <= 360; i += 0.1f){
-        rdRotate3((vec3(float)){1, 1, 0}, i,  &rotate);
+    for(float i = 0; i <= 720; i += 0.015f){
+        rdRotate3((vec3(float)){0.4, 0.5, 0.2}, i,  &rotate);
 
         rdClear(&win);
         // rdLines3(verts, indexes_lines, 12, &prog, &win);
