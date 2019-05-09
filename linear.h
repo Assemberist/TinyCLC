@@ -119,9 +119,12 @@ mat2(T) _cat(mat2(T), _mul_scalar_)(const mat2(T)* m, const T val){\
     result.m[1][1] = m->m[1][1] * val;\
     return result;\
 }\
+T _cat(mat2(T), _det_)(const mat2(T)* m){\
+    return m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1];\
+}\
 mat2(T) _cat(mat2(T), _inverse_)(const mat2(T)* m){\
     mat2(T) result;\
-    T det = m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1];\
+    T det = mat2_det(T)(m);\
     if(det == 0){\
         fprintf(stderr, "linear [inverse2]: matrix is singular\n");\
         exit(EXIT_FAILURE);\
@@ -258,22 +261,72 @@ mat3(T) _cat(mat3(T), _mul_scalar_)(const mat3(T)* m0, const T val){\
     result.m[2][2] = m0->m[2][2] * val;\
     return result;\
 }\
+T _cat(mat3(T), _det_)(const mat3(T)* m){\
+    mat2(T) min00 = {{\
+        {m->m[1][1], m->m[1][2]},\
+        {m->m[2][1], m->m[2][2]}\
+    }};\
+    mat2(T) min01 = {{\
+        {m->m[1][0], m->m[1][2]},\
+        {m->m[2][0], m->m[2][2]}\
+    }};\
+    mat2(T) min02 = {{\
+        {m->m[1][0], m->m[1][1]},\
+        {m->m[2][0], m->m[2][1]}\
+    }};\
+    return m->m[0][0] * mat2_det(T)(&min00) - m->m[0][1] * mat2_det(T)(&min01) + m->m[0][2] * mat2_det(T)(&min02);\
+}\
+mat3(T) _cat(mat3(T), _adj_)(const mat3(T)* m){\
+    mat2(T) min00 = {{\
+        {m->m[1][1], m->m[1][2]},\
+        {m->m[2][1], m->m[2][2]}\
+    }};\
+    mat2(T) min01 = {{\
+        {m->m[1][0], m->m[1][2]},\
+        {m->m[2][0], m->m[2][2]}\
+    }};\
+    mat2(T) min02 = {{\
+        {m->m[1][0], m->m[1][1]},\
+        {m->m[2][0], m->m[2][1]}\
+    }};\
+    mat2(T) min10 = {{\
+        {m->m[0][1], m->m[0][2]},\
+        {m->m[2][1], m->m[2][2]}\
+    }};\
+    mat2(T) min11 = {{\
+        {m->m[0][0], m->m[0][2]},\
+        {m->m[2][0], m->m[2][2]}\
+    }};\
+    mat2(T) min12 = {{\
+        {m->m[0][0], m->m[0][1]},\
+        {m->m[2][0], m->m[2][1]}\
+    }};\
+    mat2(T) min20 = {{\
+        {m->m[0][1], m->m[0][2]},\
+        {m->m[1][1], m->m[1][2]}\
+    }};\
+    mat2(T) min21 = {{\
+        {m->m[0][0], m->m[0][2]},\
+        {m->m[1][0], m->m[1][2]}\
+    }};\
+    mat2(T) min22 = {{\
+        {m->m[0][0], m->m[0][1]},\
+        {m->m[1][0], m->m[1][1]}\
+    }};\
+    mat3(T) result = {{\
+        {mat2_det(T)(&min00), -mat2_det(T)(&min10), mat2_det(T)(&min20)},\
+        {-mat2_det(T)(&min01), mat2_det(T)(&min11), -mat2_det(T)(&min21)},\
+        {mat2_det(T)(&min02), -mat2_det(T)(&min12), mat2_det(T)(&min22)},\
+    }};\
+    return result;\
+}\
 mat3(T) _cat(mat3(T), _inverse_)(const mat3(T)* m){\
-    mat3(T) result;\
-    T det = m->m[0][0] * (m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1]) + m->m[0][1] * (m->m[1][2] * m->m[2][0] - m->m[1][0] * m->m[2][2]) + m->m[0][2] * (m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0]);\
+    T det = mat3_det(T)(m);\
     if(det == 0){\
         fprintf(stderr, "linear [inverse3]: matrix is singular\n");\
         exit(EXIT_FAILURE);\
     }\
-    result.m[0][0] = m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1];\
-    result.m[0][1] = m->m[0][2] * m->m[2][1] - m->m[0][1] * m->m[2][2];\
-    result.m[0][2] = m->m[0][1] * m->m[1][2] - m->m[0][2] * m->m[1][1];\
-    result.m[1][0] = m->m[1][2] * m->m[2][0] - m->m[1][0] * m->m[2][2];\
-    result.m[1][1] = m->m[0][0] * m->m[2][2] - m->m[0][2] * m->m[2][0];\
-    result.m[1][2] = m->m[0][2] * m->m[1][0] - m->m[0][0] * m->m[1][2];\
-    result.m[2][0] = m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0];\
-    result.m[2][1] = m->m[0][1] * m->m[2][0] - m->m[0][0] * m->m[2][1];\
-    result.m[2][2] = m->m[0][0] * m->m[1][1] - m->m[0][1] * m->m[1][0];\
+    mat3(T) result = mat3_adj(T)(m);\
     return mat3_mul_scalar(T)(&result, (T)1 / det);\
 }\
 mat3(T) _cat(_cat(mat3(T), _div_), mat3(T))(const mat3(T)* m0, const mat3(T)* m1){\
@@ -345,6 +398,7 @@ mat4(T) _cat(_cat(mat4(T), _mul_), mat4(T))(const mat4(T)* m0, const mat4(T)* m1
 #define mat2_haddiv_mat2(T) _cat(_cat(mat2(T), _haddiv_), mat2(T))
 #define mat2_mul_mat2(T) _cat(_cat(mat2(T), _mul_), mat2(T))
 #define mat2_mul_scalar(T) _cat(mat2(T), _mul_scalar_)
+#define mat2_det(T) _cat(mat2(T), _det_)
 #define mat2_inverse(T) _cat(mat2(T), _inverse_)
 #define mat2_div_mat2(T) _cat(_cat(mat2(T), _div_), mat2(T))
 #define lininter(T) _cat(_lininter_, T)
@@ -364,6 +418,8 @@ mat4(T) _cat(_cat(mat4(T), _mul_), mat4(T))(const mat4(T)* m0, const mat4(T)* m1
 #define mat3_haddiv_mat3(T) _cat(_cat(mat3(T), _haddiv_), mat3(T))
 #define mat3_mul_mat3(T) _cat(_cat(mat3(T), _mul_), mat3(T))
 #define mat3_mul_scalar(T) _cat(mat3(T), _mul_scalar_)
+#define mat3_det(T) _cat(mat3(T), _det_)
+#define mat3_adj(T) _cat(mat3(T), _adj_)
 #define mat3_inverse(T) _cat(mat3(T), _inverse_)
 #define mat3_div_mat3(T) _cat(_cat(mat3(T), _div_), mat3(T))
 #define lininter2(T) _cat(_lininter2_, T)

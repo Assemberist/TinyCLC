@@ -7,11 +7,19 @@
 LINEAR(float)
 
 int main(int argc, char* argv[]){
-    vec3(float) a = {1, 2, 3};
-    vec3(float) b = {-4, 5, 6};
-    auto c = vec3_cross_vec3(float)(a, b);
+    mat3(float) A = {{
+        {1, 2, 3},
+        {-4, 5, 6},
+        {7, -8, 9}
+    }};
+    auto B = mat3_inverse(float)(&A);
 
-    printf("%f %f %f\n", c.x, c.y, c.z);
+    printf("%f %f %f\n%f %f %f\n%f %f %f\n", 
+        B.m[0][0], B.m[0][1], B.m[0][2],
+        B.m[1][0], B.m[1][1], B.m[1][2],
+        B.m[2][0], B.m[2][1], B.m[2][2]
+    );
+    
 
     return 0;
 }
