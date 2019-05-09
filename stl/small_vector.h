@@ -93,7 +93,7 @@ T _cat(_pop_back, std_small_vector(T))(std_small_vector(T)* svec){\
 #endif
 
 #ifndef std_swap
-#define std_swap(ITER1, ITER2) *(ITER1) ^= *(ITER2) ^= *(ITER1) ^= *(ITER2)
+#define std_swap(ITER1, ITER2) ((*ITER2) = ((*ITER1) + (*ITER2)) - ((*ITER1) = (*ITER2)))
 #endif
 
 #ifndef foreach

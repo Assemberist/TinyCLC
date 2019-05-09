@@ -118,7 +118,7 @@ T _cat(_pop_back, std_vector(T))(std_vector(T)* vec){\
 #endif
 
 #ifndef std_swap
-#define std_swap(ITER1, ITER2) *(ITER1) ^= *(ITER2) ^= *(ITER1) ^= *(ITER2)
+#define std_swap(ITER1, ITER2) ((*ITER2) = ((*ITER1) + (*ITER2)) - ((*ITER1) = (*ITER2)))
 #endif
 
 #ifndef foreach

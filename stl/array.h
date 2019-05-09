@@ -70,7 +70,7 @@ T* _cat(_back, std_array(T))(std_array(T)* arr){\
 #endif
 
 #ifndef std_swap
-#define std_swap(ITER1, ITER2) *(ITER1) ^= *(ITER2) ^= *(ITER1) ^= *(ITER2)
+#define std_swap(ITER1, ITER2) ((*ITER2) = ((*ITER1) + (*ITER2)) - ((*ITER1) = (*ITER2)))
 #endif
 
 #ifndef foreach
