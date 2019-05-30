@@ -91,7 +91,7 @@ typedef struct VMInstance{
 #define VM_R16_END VM_R16_START + VM_R16_COUNT
 #define VM_R32_END VM_R32_START + VM_R32_COUNT
 #define VM_R64_END VM_R64_START + VM_R64_COUNT
-#define VM_R128_END VM_R128_START + VM_R16_COUNT
+#define VM_R128_END VM_R128_START + VM_R128_COUNT
 #define VM_R256_END VM_R256_START + VM_R256_COUNT
 
 #define VM_R8_INDEX_INBOUNDS(index) ((index >= VM_R8_START) && (index < VM_R8_END))
@@ -161,7 +161,7 @@ void _vm_go_r(vm_uint8_t* reg, VMInstance* vm){
     // go r256
     vm_uint8_t _reg = *reg;
 
-    if(_reg >= VM_R256_START)
+    if(VM_R256_INDEX_INBOUNDS(_reg))
         vm->rip = VM_UINT256_T(VM_R256(_reg - 248, *vm));
     else vm->halt = true;
 }
@@ -183,6 +183,54 @@ void _vm_snd_r_r(vm_uint8_t* reg0, vm_uint8_t* reg1, VMInstance* vm){
         VM_R128(_reg1 - VM_R128_END, *vm) = VM_R128(_reg0 - VM_R128_END, *vm);
     else if(VM_R256_INDEX_INBOUNDS(_reg0) && VM_R256_INDEX_INBOUNDS(_reg1))
         VM_R256(_reg1 - VM_R256_END, *vm) = VM_R256(_reg0 - VM_R256_END, *vm);
+    else vm->halt = true;
+}
+void _vm_snd_num_r8(vm_uint8_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r8
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R8_INDEX_INBOUNDS(_reg))
+        VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = *num;
+    else vm->halt = true;
+}
+void _vm_snd_num_r16(vm_uint16_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r16
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R16_INDEX_INBOUNDS(_reg))
+        VM_UINT16_T(VM_R16(*reg - VM_R16_END, *vm)) = *num;
+    else vm->halt = true;
+}
+void _vm_snd_num_r32(vm_uint32_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r32
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R32_INDEX_INBOUNDS(_reg))
+        VM_UINT32_T(VM_R32(*reg - VM_R32_END, *vm)) = *num;
+    else vm->halt = true;
+}
+void _vm_snd_num_r64(vm_uint64_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r64
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R64_INDEX_INBOUNDS(_reg))
+        VM_UINT64_T(VM_R64(*reg - VM_R64_END, *vm)) = *num;
+    else vm->halt = true;
+}
+void _vm_snd_num_r128(vm_uint128_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r128
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R128_INDEX_INBOUNDS(_reg))
+        VM_UINT128_T(VM_R128(*reg - VM_R128_END, *vm)) = *num;
+    else vm->halt = true;
+}
+void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
+    // snd num, r256
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R256_INDEX_INBOUNDS(_reg))
+        VM_UINT256_T(VM_R256(*reg - VM_R256_END, *vm)) = *num;
     else vm->halt = true;
 }
 
@@ -215,9 +263,57 @@ VMInstructionDescriptorsTable GIDT = {
             .icode = {0x00, 0x00, 0x00, 0x03},
             .alias = "snd",
             .impl = _vm_snd_r_r
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT8_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x04},
+            .alias = "snd",
+            .impl = _vm_snd_num_r8
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT16_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x05},
+            .alias = "snd",
+            .impl = _vm_snd_num_r16
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT32_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x06},
+            .alias = "snd",
+            .impl = _vm_snd_num_r32
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT64_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x07},
+            .alias = "snd",
+            .impl = _vm_snd_num_r64
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT128_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x08},
+            .alias = "snd",
+            .impl = _vm_snd_num_r128
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = NUMBER, .op1_type = REGISTER,
+            .op0_size = UINT256_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x09},
+            .alias = "snd",
+            .impl = _vm_snd_num_r256
         }
     },
-    .size = 3
+    .size = 9
 };
 
 
