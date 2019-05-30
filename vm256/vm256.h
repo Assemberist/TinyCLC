@@ -72,13 +72,42 @@ typedef struct VMInstance{
 };
 
 
-// reference to register
-#define VM_R8(reg, vm) ((vm_r8*)&(vm).r0)[(reg) % 128]
-#define VM_R16(reg, vm) ((vm_r16*)&(vm).r0)[(reg) % 64]
-#define VM_R32(reg, vm) ((vm_r32*)&(vm).r0)[(reg) % 32]
-#define VM_R64(reg, vm) ((vm_r64*)&(vm).r0)[(reg) % 16]
-#define VM_R128(reg, vm) ((vm_r128*)&(vm).r0)[(reg) % 8]
-#define VM_R256(reg, vm) ((vm_r256*)&(vm).r0)[(reg) % 4]
+// register macros
+#define VM_R8_COUNT 128
+#define VM_R16_COUNT 64
+#define VM_R32_COUNT 32
+#define VM_R64_COUNT 16
+#define VM_R128_COUNT 8
+#define VM_R256_COUNT 4
+
+#define VM_R8_START 0
+#define VM_R16_START VM_R8_COUNT
+#define VM_R32_START VM_R8_COUNT + VM_R16_COUNT
+#define VM_R64_START VM_R8_COUNT + VM_R16_COUNT + VM_R32_COUNT
+#define VM_R128_START VM_R8_COUNT + VM_R16_COUNT + VM_R32_COUNT + VM_R64_COUNT
+#define VM_R256_START VM_R8_COUNT + VM_R16_COUNT + VM_R32_COUNT + VM_R64_COUNT + VM_R128_COUNT
+
+#define VM_R8_END VM_R8_START + VM_R8_COUNT
+#define VM_R16_END VM_R16_START + VM_R16_COUNT
+#define VM_R32_END VM_R32_START + VM_R32_COUNT
+#define VM_R64_END VM_R64_START + VM_R64_COUNT
+#define VM_R128_END VM_R128_START + VM_R16_COUNT
+#define VM_R256_END VM_R256_START + VM_R256_COUNT
+
+#define VM_R8_INDEX_INBOUNDS(index) ((index >= VM_R8_START) && (index < VM_R8_END))
+#define VM_R16_INDEX_INBOUNDS(index) ((index >= VM_R16_START) && (index < VM_R16_END))
+#define VM_R32_INDEX_INBOUNDS(index) ((index >= VM_R32_START) && (index < VM_R32_END))
+#define VM_R64_INDEX_INBOUNDS(index) ((index >= VM_R64_START) && (index < VM_R64_END))
+#define VM_R128_INDEX_INBOUNDS(index) ((index >= VM_R128_START) && (index < VM_R128_END))
+#define VM_R256_INDEX_INBOUNDS(index) ((index >= VM_R256_START) && (index < VM_R256_END))
+
+
+#define VM_R8(reg, vm) ((vm_r8*)&(vm).r0)[(reg) % VM_R8_COUNT]
+#define VM_R16(reg, vm) ((vm_r16*)&(vm).r0)[(reg) % VM_R16_COUNT]
+#define VM_R32(reg, vm) ((vm_r32*)&(vm).r0)[(reg) % VM_R32_COUNT]
+#define VM_R64(reg, vm) ((vm_r64*)&(vm).r0)[(reg) % VM_R64_COUNT]
+#define VM_R128(reg, vm) ((vm_r128*)&(vm).r0)[(reg) % VM_R128_COUNT]
+#define VM_R256(reg, vm) ((vm_r256*)&(vm).r0)[(reg) % VM_R256_COUNT]
 
 
 // Instruction
@@ -131,7 +160,8 @@ void _vm_go_adr(vm_uint256_t* adr, VMInstance* vm){
 void _vm_go_r(vm_uint8_t* reg, VMInstance* vm){
     // go r256
     vm_uint8_t _reg = *reg;
-    if(_reg >= 248)
+
+    if(_reg >= VM_R256_START)
         vm->rip = VM_UINT256_T(VM_R256(_reg - 248, *vm));
     else vm->halt = true;
 }
@@ -141,19 +171,19 @@ void _vm_snd_r_r(vm_uint8_t* reg0, vm_uint8_t* reg1, VMInstance* vm){
     vm_uint8_t _reg0 = *reg0;
     vm_uint8_t _reg1 = *reg1;
 
-    if(_reg0 < 128){
-
-    }else if(_reg0 < 128 + 64){
-
-    }else if(_reg0 < 128 + 64 + 32){
-
-    }else if(_reg0 < 128 + 64 + 32 + 16){
-
-    }else if(_reg0 < 128 + 64 + 32 + 16 + 8){
-
-    }else if(_reg0 < 128 + 64 + 32 + 16 + 8 + 4){
-
-    } else vm->halt = true;
+    if(VM_R8_INDEX_INBOUNDS(_reg0) && VM_R8_INDEX_INBOUNDS(_reg1))
+        VM_R8(_reg1 - VM_R8_END, *vm) = VM_R8(_reg0 - VM_R8_END, *vm);
+    else if(VM_R16_INDEX_INBOUNDS(_reg0) && VM_R16_INDEX_INBOUNDS(_reg1))
+        VM_R16(_reg1 - VM_R16_END, *vm) = VM_R16(_reg0 - VM_R16_END, *vm);
+    else if(VM_R32_INDEX_INBOUNDS(_reg0) && VM_R32_INDEX_INBOUNDS(_reg1))
+        VM_R32(_reg1 - VM_R32_END, *vm) = VM_R32(_reg0 - VM_R32_END, *vm);
+    else if(VM_R64_INDEX_INBOUNDS(_reg0) && VM_R64_INDEX_INBOUNDS(_reg1))
+        VM_R64(_reg1 - VM_R64_END, *vm) = VM_R64(_reg0 - VM_R64_END, *vm);
+    else if(VM_R128_INDEX_INBOUNDS(_reg0) && VM_R128_INDEX_INBOUNDS(_reg1))
+        VM_R128(_reg1 - VM_R128_END, *vm) = VM_R128(_reg0 - VM_R128_END, *vm);
+    else if(VM_R256_INDEX_INBOUNDS(_reg0) && VM_R256_INDEX_INBOUNDS(_reg1))
+        VM_R256(_reg1 - VM_R256_END, *vm) = VM_R256(_reg0 - VM_R256_END, *vm);
+    else vm->halt = true;
 }
 
 /////////////////////////////////////////////////////
