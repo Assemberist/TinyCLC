@@ -4,12 +4,9 @@
 #include "vm256.h"
 
 int main(){
-    vm_uint16_t a = {0x00, 0x00};
-    vm_uint16_t b = {0xff, 0xff};
+    VMInstance vm;
 
-    vm_uint16_t c = vm_and_u16(a, b);
-
-    printf("%#02x %#02x\n", c.bytes[0], c.bytes[1]);
+    VM_R8(2, vm) = 4;
 
     return 0;
 }
