@@ -71,6 +71,19 @@ typedef struct vm_int256_t{
 
 
 /////////////////////////////////////////////////////
+//                   CONVERSIONS
+/////////////////////////////////////////////////////
+
+#define VM_UINT8_T(some8) ((vm_uint8_t*)&some8)[0]
+#define VM_UINT16_T(some16) ((vm_uint16_t*)&some16)[0]
+#define VM_UINT32_T(some32) ((vm_uint16_t*)&some32)[0]
+#define VM_UINT64_T(some64) ((vm_uint64_t*)&some64)[0]
+#define VM_UINT128_T(some128) ((vm_uint128_t*)&some128)[0]
+#define VM_UINT256_T(some256) ((vm_uint256_t*)&some256)[0]
+#define VM_SIZE_T(some_size_t) ((vm_size_t*)&some_size_t)[0]
+
+
+/////////////////////////////////////////////////////
 //                   OPERATIONS
 /////////////////////////////////////////////////////
 
