@@ -3,6 +3,7 @@
 
 #define VM_STACK_SIZE 8192
 #define VM_IDT_SIZE 1024
+#define VM_ID_EXT_SIZE 1024
 
 /////////////////////////////////////////
 //              REGISTERS
@@ -137,8 +138,13 @@ typedef struct VMInstructionDescriptor{
 
 typedef struct VMInstructionDescriptorsTable{
     const VMInstructionDescriptor idt[VM_IDT_SIZE];
-    size_t size;
+    vm_size_t size;
 } VMInstructionDescriptorsTable;
+
+typedef struct VMInstructionDescriptorsExt{
+    VMInstructionDescriptorsTable* ext[VM_ID_EXT_SIZE];
+    vm_size_t size;
+} VMInstructionDescriptorsExt;
 
 
 typedef struct VMInstruction{
@@ -320,29 +326,31 @@ VMInstructionDescriptorsTable GIDT = {
 /////////////////////////////////////////
 //               METHODS
 /////////////////////////////////////////
-const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, VMInstructionDescriptorsTable* extra){
-    size_t size = extra->size;
+const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, VMInstructionDescriptorsTable* idt){
+    vm_size_t size = idt->size;
 
-    for(size_t i = 0; i < size; i++){
-        if(vm_equal32(*icode, extra->idt[i].icode)) return extra->idt + i;
+    for(vm_size_t i = 0; i < size; i++){
+        if(vm_equal32(*icode, idt->idt[i].icode)) return idt->idt + i;
     }    
     return NULL;
 }
-const VMInstructionDescriptor* vmFindInstruction(const vm_uint32_t* icode, VMInstructionDescriptorsTable* extra){
+const VMInstructionDescriptor* vmFindInstruction(const vm_uint32_t* icode, VMInstructionDescriptorsExt* ext){
     const VMInstructionDescriptor* desc = _vmFindInstructionIDT(icode, &GIDT);
     if(desc != NULL) return desc;
 
-    if(extra != NULL){
-        desc = _vmFindInstructionIDT(icode, extra);
-        if(desc != NULL) return desc;
+    if(ext != NULL){
+        for(vm_size_t i = 0; i < ext->size; i++){
+            desc = _vmFindInstructionIDT(icode, ext->ext[i]);
+            if(desc != NULL) return desc;
+        }
     }
 
     return NULL;
 }
 
-void vmExecInstruction(VMInstruction* instr, VMInstance* vm, VMInstructionDescriptorsTable* extra){
+void vmExecInstruction(VMInstruction* instr, VMInstance* vm, VMInstructionDescriptorsExt* ext){
     if(vm->halt == false){
-        const VMInstructionDescriptor* desc = vmFindInstruction(instr->icode, extra);
+        const VMInstructionDescriptor* desc = vmFindInstruction(instr->icode, ext);
 
         if(desc != NULL){
             switch (desc->itype){

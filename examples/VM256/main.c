@@ -3,31 +3,41 @@
 #define VM_TARGET_ARCH64
 #include "vm256.h"
 
+// extended instruction set test
+void my_instr(VMInstance* vm){
+    puts("My first ext instruction!");
+}
+
+VMInstructionDescriptorsTable my_ext = {
+    .idt = {
+        (VMInstructionDescriptor){
+            .itype = FREE,
+            .icode = {0x00, 0x00, 0x00, 0xA0},
+            .alias = "myi",
+            .impl = my_instr
+        }
+    },
+    .size = 1
+};
 
 int main(){
     VMInstance vm = VMInstanceDefault;
-
-    // snd 0x12310743ff7394171181448956732301, r128_0
+    VMInstructionDescriptorsExt ext = {
+        .ext = {
+            &my_ext
+        },
+        .size = 1
+    };
 
     // bytecode
-    vm_uint32_t icode = {0x00, 0x00, 0x00, 0x08};
-    vm_uint128_t op0 = {
-        0x12, 0x31, 0x07, 0x43,
-        0xff, 0x73, 0x94, 0x17,
-        0x11, 0x81, 0x44, 0x89,
-        0x56, 0x73, 0x23, 0x01
-    };
-    vm_uint8_t op1 = 240;
-
+    vm_uint32_t icode = {0x00, 0x00, 0x00, 0xA0};
 
     // instructions
     VMInstruction i = {
-        .icode = &icode,
-        .op0 = &op0,
-        .op1 = &op1
+        .icode = &icode
     };
 
-    vmExecInstruction(&i, &vm, NULL);
+    vmExecInstruction(&i, &vm, &ext);
 
     if(vm.halt)
         printf("Wrong instruction! VMInstance %p halted\n", &vm);
