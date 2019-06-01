@@ -6,28 +6,31 @@
 
 
 int main(){
-    // VMInstance vm = VMInstanceDefault;
+    VMInstance vm = VMInstanceDefault;
 
-    // // bytecode
-    // vm_uint32_t icode = {0x00, 0x00, 0x00, 0x0A};
-    // vm_uint8_t op = 4;
-
-    // // instructions
-    // VMInstruction i = {
-    //     .icode = &icode,
-    //     .op0 = &op
-    // };
-
-    // vmExecInstruction(&i, &vm, NULL);
-
-    // if(vm.halt)
-    //     printf("Wrong instruction! VMInstance %p halted\n", &vm);
-
-    vm_uint32_t a = {
-        0x00, 0x00, 0x00, 0x00
+    // bytecode
+    vm_uint32_t icode = {0x00, 0x00, 0x00, 0x0f};
+    vm_uint256_t op = {
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07,
+        0xa0, 0x04, 0x0b, 0x07
     };
 
-    vm_uint32_t b = vm_inc_ui32(a);
+    // instructions
+    VMInstruction i = {
+        .icode = &icode,
+        .op0 = &op
+    };
+
+    vmExecInstruction(&i, &vm, NULL);
+
+    if(vm.halt)
+        printf("Wrong instruction! VMInstance %p halted\n", &vm);
 
     return 0;
 }

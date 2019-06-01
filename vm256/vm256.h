@@ -244,6 +244,27 @@ void _vm_push8_num(vm_uint8_t* num, VMInstance* vm){
     vm->stack8[vm_ui256_to_size_t(vm->rsp8)] = *num;
     vm->rsp8 = vm_inc_ui256(vm->rsp8);
 }
+void _vm_push16_num(vm_uint16_t* num, VMInstance* vm){
+    vm->stack16[vm_ui256_to_size_t(vm->rsp16)] = *num;
+    vm->rsp16 = vm_inc_ui256(vm->rsp16);
+}
+void _vm_push32_num(vm_uint32_t* num, VMInstance* vm){
+    vm->stack32[vm_ui256_to_size_t(vm->rsp32)] = *num;
+    vm->rsp32 = vm_inc_ui256(vm->rsp32);
+}
+void _vm_push64_num(vm_uint64_t* num, VMInstance* vm){
+    vm->stack64[vm_ui256_to_size_t(vm->rsp64)] = *num;
+    vm->rsp64 = vm_inc_ui256(vm->rsp64);
+}
+void _vm_push128_num(vm_uint128_t* num, VMInstance* vm){
+    vm->stack128[vm_ui256_to_size_t(vm->rsp128)] = *num;
+    vm->rsp128 = vm_inc_ui256(vm->rsp128);
+}
+void _vm_push256_num(vm_uint256_t* num, VMInstance* vm){
+    vm->stack256[vm_ui256_to_size_t(vm->rsp256)] = *num;
+    vm->rsp256 = vm_inc_ui256(vm->rsp256);
+}
+
 
 /////////////////////////////////////////////////////
 //       GLOBAL INSTRUCTION DESCRIPTORS TABLE
@@ -327,12 +348,52 @@ VMInstructionDescriptorsTable GIDT = {
             .itype = SINGLE,
             .op0_type = NUMBER,
             .op0_size = UINT8_T,
-            .icode = {0x00, 0x00, 0x00, 0x0A},
+            .icode = {0x00, 0x00, 0x00, 0x0a},
             .alias = "push8",
             .impl = _vm_push8_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT16_T,
+            .icode = {0x00, 0x00, 0x00, 0x0b},
+            .alias = "push16",
+            .impl = _vm_push16_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT32_T,
+            .icode = {0x00, 0x00, 0x00, 0x0c},
+            .alias = "push32",
+            .impl = _vm_push32_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT64_T,
+            .icode = {0x00, 0x00, 0x00, 0x0d},
+            .alias = "push64",
+            .impl = _vm_push64_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT128_T,
+            .icode = {0x00, 0x00, 0x00, 0x0e},
+            .alias = "push128",
+            .impl = _vm_push128_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT256_T,
+            .icode = {0x00, 0x00, 0x00, 0x0f},
+            .alias = "push256",
+            .impl = _vm_push256_num
         }
     },
-    .size = 10
+    .size = 15
 };
 
 
