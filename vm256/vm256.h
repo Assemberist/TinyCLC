@@ -241,28 +241,89 @@ void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
 }
 
 void _vm_push8_num(vm_uint8_t* num, VMInstance* vm){
+    // push8 num
     vm->stack8[vm_ui256_to_size_t(vm->rsp8)] = *num;
     vm->rsp8 = vm_inc_ui256(vm->rsp8);
 }
 void _vm_push16_num(vm_uint16_t* num, VMInstance* vm){
+    // push16 num
     vm->stack16[vm_ui256_to_size_t(vm->rsp16)] = *num;
     vm->rsp16 = vm_inc_ui256(vm->rsp16);
 }
 void _vm_push32_num(vm_uint32_t* num, VMInstance* vm){
+    // push32 num
     vm->stack32[vm_ui256_to_size_t(vm->rsp32)] = *num;
     vm->rsp32 = vm_inc_ui256(vm->rsp32);
 }
 void _vm_push64_num(vm_uint64_t* num, VMInstance* vm){
+    // push64 num
     vm->stack64[vm_ui256_to_size_t(vm->rsp64)] = *num;
     vm->rsp64 = vm_inc_ui256(vm->rsp64);
 }
 void _vm_push128_num(vm_uint128_t* num, VMInstance* vm){
+    // push128 num
     vm->stack128[vm_ui256_to_size_t(vm->rsp128)] = *num;
     vm->rsp128 = vm_inc_ui256(vm->rsp128);
 }
 void _vm_push256_num(vm_uint256_t* num, VMInstance* vm){
+    // push256 num
     vm->stack256[vm_ui256_to_size_t(vm->rsp256)] = *num;
     vm->rsp256 = vm_inc_ui256(vm->rsp256);
+}
+
+void _vm_push8_r(vm_uint8_t* reg, VMInstance* vm){
+    // push8 r8
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R8_INDEX_INBOUNDS(_reg)){
+        vm->stack8[vm_ui256_to_size_t(vm->rsp8)] = VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm));
+        vm->rsp8 = vm_inc_ui256(vm->rsp8);
+    }else vm->halt = true;
+}
+void _vm_push16_r(vm_uint8_t* reg, VMInstance* vm){
+    // push16 r16
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R16_INDEX_INBOUNDS(_reg)){
+        vm->stack16[vm_ui256_to_size_t(vm->rsp16)] = VM_UINT16_T(VM_R16(*reg - VM_R16_END, *vm));
+        vm->rsp16 = vm_inc_ui256(vm->rsp16);
+    }else vm->halt = true;
+}
+void _vm_push32_r(vm_uint8_t* reg, VMInstance* vm){
+    // push32 r32
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R32_INDEX_INBOUNDS(_reg)){
+        vm->stack32[vm_ui256_to_size_t(vm->rsp32)] = VM_UINT32_T(VM_R32(*reg - VM_R32_END, *vm));
+        vm->rsp32 = vm_inc_ui256(vm->rsp32);
+    }else vm->halt = true;
+}
+void _vm_push64_r(vm_uint8_t* reg, VMInstance* vm){
+    // push64 r64
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R64_INDEX_INBOUNDS(_reg)){
+        vm->stack64[vm_ui256_to_size_t(vm->rsp64)] = VM_UINT64_T(VM_R64(*reg - VM_R64_END, *vm));
+        vm->rsp64 = vm_inc_ui256(vm->rsp64);
+    }else vm->halt = true;
+}
+void _vm_push128_r(vm_uint8_t* reg, VMInstance* vm){
+    // push128 r128
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R128_INDEX_INBOUNDS(_reg)){
+        vm->stack128[vm_ui256_to_size_t(vm->rsp128)] = VM_UINT128_T(VM_R128(*reg - VM_R128_END, *vm));
+        vm->rsp128 = vm_inc_ui256(vm->rsp128);
+    }else vm->halt = true;
+}
+void _vm_push256_r(vm_uint8_t* reg, VMInstance* vm){
+    // push256 r256
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R256_INDEX_INBOUNDS(_reg)){
+        vm->stack256[vm_ui256_to_size_t(vm->rsp256)] = VM_UINT256_T(VM_R256(*reg - VM_R256_END, *vm));
+        vm->rsp256 = vm_inc_ui256(vm->rsp256);
+    }else vm->halt = true;
 }
 
 
@@ -391,9 +452,57 @@ VMInstructionDescriptorsTable GIDT = {
             .icode = {0x00, 0x00, 0x00, 0x0f},
             .alias = "push256",
             .impl = _vm_push256_num
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x10},
+            .alias = "push8",
+            .impl = _vm_push8_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT16_T,
+            .icode = {0x00, 0x00, 0x00, 0x11},
+            .alias = "push16",
+            .impl = _vm_push16_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT32_T,
+            .icode = {0x00, 0x00, 0x00, 0x12},
+            .alias = "push32",
+            .impl = _vm_push32_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT64_T,
+            .icode = {0x00, 0x00, 0x00, 0x13},
+            .alias = "push64",
+            .impl = _vm_push64_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT128_T,
+            .icode = {0x00, 0x00, 0x00, 0x14},
+            .alias = "push128",
+            .impl = _vm_push128_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT256_T,
+            .icode = {0x00, 0x00, 0x00, 0x15},
+            .alias = "push256",
+            .impl = _vm_push256_r
         }
     },
-    .size = 15
+    .size = 21
 };
 
 
