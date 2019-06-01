@@ -20,75 +20,111 @@ typedef unsigned short int vm_size_t;
     #endif
 #endif
 
+#ifndef __cat
+#define __cat(X, Y) X##Y
+#endif
+
+#ifndef _cat
+#define _cat(X, Y) __cat(X, Y)
+#endif
+
+#define _vm_ui(bitdepth) _cat(vm_uint, _cat(bitdepth, _t))
+#define _vm_ui_size(bitdepth) (bitdepth / 8)
+#define _vm_i(bitdepth) _cat(vm_int, _cat(bitdepth, _t))
+#define _vm_i_size(bitdepth) (bitdepth / 8)
+
+
+
+
 typedef enum _VM_BOOL {false = 0, true} vm_bool;
 
 // unsigned
 typedef unsigned char vm_uint8_t;
 
-typedef struct vm_uint16_t{
-    vm_uint8_t bytes[2];
-} vm_uint16_t;
+#define _vm_decl_ui(bitdepth)\
+typedef struct _vm_ui(bitdepth){\
+    vm_uint8_t bytes[_vm_ui_size(bitdepth)];\
+} _vm_ui(bitdepth);
 
-typedef struct vm_uint32_t{
-    vm_uint8_t bytes[4];
-} vm_uint32_t;
-
-typedef struct vm_uint64_t{
-    vm_uint8_t bytes[8];
-} vm_uint64_t;
-
-typedef struct vm_uint128_t{
-    vm_uint8_t bytes[16];
-} vm_uint128_t;
-
-typedef struct vm_uint256_t{
-    vm_uint8_t bytes[32];
-} vm_uint256_t;
-
+_vm_decl_ui(16)
+_vm_decl_ui(32)
+_vm_decl_ui(64)
+_vm_decl_ui(128)
+_vm_decl_ui(256)
 
 // signed
 typedef char vm_int8_t;
 
-typedef struct vm_int16_t{
-    vm_int8_t bytes[2];
-} vm_int16_t;
+#define _vm_decl_i(bitdepth)\
+typedef struct _vm_i(bitdepth){\
+    vm_int8_t bytes[_vm_i_size(bitdepth)];\
+} _vm_i(bitdepth);
 
-typedef struct vm_int32_t{
-    vm_int8_t bytes[4];
-} vm_int32_t;
-
-typedef struct vm_int64_t{
-    vm_int8_t bytes[8];
-} vm_int64_t;
-
-typedef struct vm_int128_t{
-    vm_int8_t bytes[16];
-} vm_int128_t;
-
-typedef struct vm_int256_t{
-    vm_int8_t bytes[32];
-} vm_int256_t;
+_vm_decl_i(16)
+_vm_decl_i(32)
+_vm_decl_i(64)
+_vm_decl_i(128)
+_vm_decl_i(256)
 
 
 /////////////////////////////////////////////////////
 //                   CONVERSIONS
 /////////////////////////////////////////////////////
 
-#define VM_UINT8_T(some8) ((vm_uint8_t*)&(some8))[0]
-#define VM_UINT16_T(some16) ((vm_uint16_t*)&(some16))[0]
-#define VM_UINT32_T(some32) ((vm_uint32_t*)&(some32))[0]
-#define VM_UINT64_T(some64) ((vm_uint64_t*)&(some64))[0]
-#define VM_UINT128_T(some128) ((vm_uint128_t*)&(some128))[0]
-#define VM_UINT256_T(some256) ((vm_uint256_t*)&(some256))[0]
+#define VM_UINT8_T_PTR(some8) ((vm_uint8_t*)&(some8))
+#define VM_UINT16_T_PTR(some16) ((vm_uint16_t*)&(some16))
+#define VM_UINT32_T_PTR(some32) ((vm_uint32_t*)&(some32))
+#define VM_UINT64_T_PTR(some64) ((vm_uint64_t*)&(some64))
+#define VM_UINT128_T_PTR(some128) ((vm_uint128_t*)&(some128))
+#define VM_UINT256_T_PTR(some256) ((vm_uint256_t*)&(some256))
 
-#define VM_INT8_T(some8) ((vm_int8_t*)&(some8))[0]
-#define VM_INT16_T(some16) ((vm_int16_t*)&(some16))[0]
-#define VM_INT32_T(some32) ((vm_int32_t*)&(some32))[0]
-#define VM_INT64_T(some64) ((vm_int64_t*)&(some64))[0]
-#define VM_INT128_T(some128) ((vm_int128_t*)&(some128))[0]
-#define VM_INT256_T(some256) ((vm_int256_t*)&(some256))[0]
+#define VM_INT8_T_PTR(some8) ((vm_int8_t*)&(some8))
+#define VM_INT16_T_PTR(some16) ((vm_int16_t*)&(some16))
+#define VM_INT32_T_PTR(some32) ((vm_int32_t*)&(some32))
+#define VM_INT64_T_PTR(some64) ((vm_int64_t*)&(some64))
+#define VM_INT128_T_PTR(some128) ((vm_int128_t*)&(some128))
+#define VM_INT256_T_PTR(some256) ((vm_int256_t*)&(some256))
 
-#define VM_SIZE_T(some_size_t) ((vm_size_t*)&(some_size_t))[0]
+#define VM_UINT8_T(some8) VM_UINT8_T_PTR(some8)[0]
+#define VM_UINT16_T(some16) VM_UINT16_T_PTR(some16)[0]
+#define VM_UINT32_T(some32) VM_UINT32_T_PTR(some32)[0]
+#define VM_UINT64_T(some64) VM_UINT64_T_PTR(some64)[0]
+#define VM_UINT128_T(some128) VM_UINT128_T_PTR(some128)[0]
+#define VM_UINT256_T(some256) VM_UINT256_T_PTR(some256)[0]
+
+#define VM_INT8_T(some8) VM_INT8_T_PTR(some8)[0]
+#define VM_INT16_T(some16) VM_INT16_T_PTR(some16)[0]
+#define VM_INT32_T(some32) VM_INT32_T_PTR(some32)[0]
+#define VM_INT64_T(some64) VM_INT64_T_PTR(some64)[0]
+#define VM_INT128_T(some128) VM_INT128_T_PTR(some128)[0]
+#define VM_INT256_T(some256) VM_INT256_T_PTR(some256)[0]
+
+
+vm_bool vm_is_big_endian(){
+    unsigned short magic = 0xffaa;
+    return VM_INT8_T(magic) == 0xff;
+}
+
+#define _vm_ui_to_size_t(bitdepth)\
+vm_size_t _cat(vm_ui, _cat(bitdepth, _to_size_t))(_vm_ui(bitdepth) a){\
+    vm_size_t result;\
+    if(vm_is_big_endian()){\
+        vm_size_t size = sizeof(result);\
+        for(vm_size_t i = 0; i < size; i++)\
+            VM_UINT8_T_PTR(result)[size - i - 1] = i < _vm_ui_size(bitdepth) ? a.bytes[_vm_ui_size(bitdepth) - i - 1] : 0x00;\
+    }else{\
+        vm_size_t size = sizeof(result);\
+        for(vm_size_t i = 0; i < size; i++)\
+            VM_UINT8_T_PTR(result)[i] = i < _vm_ui_size(bitdepth) ? a.bytes[_vm_ui_size(bitdepth) - i - 1] : 0x00;\
+    }\
+    return result;\
+}
+
+_vm_ui_to_size_t(16)
+_vm_ui_to_size_t(32)
+_vm_ui_to_size_t(64)
+_vm_ui_to_size_t(128)
+_vm_ui_to_size_t(256)
 
 
 /////////////////////////////////////////////////////
@@ -96,281 +132,97 @@ typedef struct vm_int256_t{
 /////////////////////////////////////////////////////
 
 // logical
-#define vm_equal16(a, b) (\
-    ((a).bytes[0] == (b).bytes[0]) && \
-    ((a).bytes[1] == (b).bytes[1])\
-)
-#define vm_equal32(a, b) (\
-    ((a).bytes[0] == (b).bytes[0]) && \
-    ((a).bytes[1] == (b).bytes[1]) && \
-    ((a).bytes[2] == (b).bytes[2]) && \
-    ((a).bytes[3] == (b).bytes[3])\
-)
-#define vm_equal64(a, b) (\
-    ((a).bytes[0] == (b).bytes[0]) && \
-    ((a).bytes[1] == (b).bytes[1]) && \
-    ((a).bytes[2] == (b).bytes[2]) && \
-    ((a).bytes[3] == (b).bytes[3]) && \
-    ((a).bytes[4] == (b).bytes[4]) && \
-    ((a).bytes[5] == (b).bytes[5]) && \
-    ((a).bytes[6] == (b).bytes[6]) && \
-    ((a).bytes[7] == (b).bytes[7])\
-)
-#define vm_equal128(a, b) (\
-    ((a).bytes[0] == (b).bytes[0]) && \
-    ((a).bytes[1] == (b).bytes[1]) && \
-    ((a).bytes[2] == (b).bytes[2]) && \
-    ((a).bytes[3] == (b).bytes[3]) && \
-    ((a).bytes[4] == (b).bytes[4]) && \
-    ((a).bytes[5] == (b).bytes[5]) && \
-    ((a).bytes[6] == (b).bytes[6]) && \
-    ((a).bytes[7] == (b).bytes[7]) && \
-    ((a).bytes[8] == (b).bytes[8]) && \
-    ((a).bytes[9] == (b).bytes[9]) && \
-    ((a).bytes[10] == (b).bytes[10]) && \
-    ((a).bytes[11] == (b).bytes[11]) && \
-    ((a).bytes[12] == (b).bytes[12]) && \
-    ((a).bytes[13] == (b).bytes[13]) && \
-    ((a).bytes[14] == (b).bytes[14]) && \
-    ((a).bytes[15] == (b).bytes[15])\
-)
-#define vm_equal256(a, b) (\
-    ((a).bytes[0] == (b).bytes[0]) && \
-    ((a).bytes[1] == (b).bytes[1]) && \
-    ((a).bytes[2] == (b).bytes[2]) && \
-    ((a).bytes[3] == (b).bytes[3]) && \
-    ((a).bytes[4] == (b).bytes[4]) && \
-    ((a).bytes[5] == (b).bytes[5]) && \
-    ((a).bytes[6] == (b).bytes[6]) && \
-    ((a).bytes[7] == (b).bytes[7]) && \
-    ((a).bytes[8] == (b).bytes[8]) && \
-    ((a).bytes[9] == (b).bytes[9]) && \
-    ((a).bytes[10] == (b).bytes[10]) && \
-    ((a).bytes[11] == (b).bytes[11]) && \
-    ((a).bytes[12] == (b).bytes[12]) && \
-    ((a).bytes[13] == (b).bytes[13]) && \
-    ((a).bytes[14] == (b).bytes[14]) && \
-    ((a).bytes[15] == (b).bytes[15]) && \
-    ((a).bytes[16] == (b).bytes[16]) && \
-    ((a).bytes[17] == (b).bytes[17]) && \
-    ((a).bytes[18] == (b).bytes[18]) && \
-    ((a).bytes[19] == (b).bytes[19]) && \
-    ((a).bytes[20] == (b).bytes[20]) && \
-    ((a).bytes[21] == (b).bytes[21]) && \
-    ((a).bytes[22] == (b).bytes[22]) && \
-    ((a).bytes[23] == (b).bytes[23]) && \
-    ((a).bytes[24] == (b).bytes[24]) && \
-    ((a).bytes[25] == (b).bytes[25]) && \
-    ((a).bytes[26] == (b).bytes[26]) && \
-    ((a).bytes[27] == (b).bytes[27]) && \
-    ((a).bytes[28] == (b).bytes[28]) && \
-    ((a).bytes[29] == (b).bytes[29]) && \
-    ((a).bytes[30] == (b).bytes[30]) && \
-    ((a).bytes[31] == (b).bytes[31])\
-)
-
-#define vm_not_equal16(a, b) (\
-    ((a).bytes[0] != (b).bytes[0]) || \
-    ((a).bytes[1] != (b).bytes[1])\
-)
-#define vm_not_equal32(a, b) (\
-    ((a).bytes[0] != (b).bytes[0]) || \
-    ((a).bytes[1] != (b).bytes[1]) || \
-    ((a).bytes[2] != (b).bytes[2]) || \
-    ((a).bytes[3] != (b).bytes[3])\
-)
-#define vm_not_equal64(a, b) (\
-    ((a).bytes[0] != (b).bytes[0]) || \
-    ((a).bytes[1] != (b).bytes[1]) || \
-    ((a).bytes[2] != (b).bytes[2]) || \
-    ((a).bytes[3] != (b).bytes[3]) || \
-    ((a).bytes[4] != (b).bytes[4]) || \
-    ((a).bytes[5] != (b).bytes[5]) || \
-    ((a).bytes[6] != (b).bytes[6]) || \
-    ((a).bytes[7] != (b).bytes[7])\
-)
-#define vm_not_equal128(a, b) (\
-    ((a).bytes[0] != (b).bytes[0]) || \
-    ((a).bytes[1] != (b).bytes[1]) || \
-    ((a).bytes[2] != (b).bytes[2]) || \
-    ((a).bytes[3] != (b).bytes[3]) || \
-    ((a).bytes[4] != (b).bytes[4]) || \
-    ((a).bytes[5] != (b).bytes[5]) || \
-    ((a).bytes[6] != (b).bytes[6]) || \
-    ((a).bytes[7] != (b).bytes[7]) || \
-    ((a).bytes[8] != (b).bytes[8]) || \
-    ((a).bytes[9] != (b).bytes[9]) || \
-    ((a).bytes[10] != (b).bytes[10]) || \
-    ((a).bytes[11] != (b).bytes[11]) || \
-    ((a).bytes[12] != (b).bytes[12]) || \
-    ((a).bytes[13] != (b).bytes[13]) || \
-    ((a).bytes[14] != (b).bytes[14]) || \
-    ((a).bytes[15] != (b).bytes[15])\
-)
-#define vm_not_equal256(a, b) (\
-    ((a).bytes[0] != (b).bytes[0]) || \
-    ((a).bytes[1] != (b).bytes[1]) || \
-    ((a).bytes[2] != (b).bytes[2]) || \
-    ((a).bytes[3] != (b).bytes[3]) || \
-    ((a).bytes[4] != (b).bytes[4]) || \
-    ((a).bytes[5] != (b).bytes[5]) || \
-    ((a).bytes[6] != (b).bytes[6]) || \
-    ((a).bytes[7] != (b).bytes[7]) || \
-    ((a).bytes[8] != (b).bytes[8]) || \
-    ((a).bytes[9] != (b).bytes[9]) || \
-    ((a).bytes[10] != (b).bytes[10]) || \
-    ((a).bytes[11] != (b).bytes[11]) || \
-    ((a).bytes[12] != (b).bytes[12]) || \
-    ((a).bytes[13] != (b).bytes[13]) || \
-    ((a).bytes[14] != (b).bytes[14]) || \
-    ((a).bytes[15] != (b).bytes[15]) || \
-    ((a).bytes[16] != (b).bytes[16]) || \
-    ((a).bytes[17] != (b).bytes[17]) || \
-    ((a).bytes[18] != (b).bytes[18]) || \
-    ((a).bytes[19] != (b).bytes[19]) || \
-    ((a).bytes[20] != (b).bytes[20]) || \
-    ((a).bytes[21] != (b).bytes[21]) || \
-    ((a).bytes[22] != (b).bytes[22]) || \
-    ((a).bytes[23] != (b).bytes[23]) || \
-    ((a).bytes[24] != (b).bytes[24]) || \
-    ((a).bytes[25] != (b).bytes[25]) || \
-    ((a).bytes[26] != (b).bytes[26]) || \
-    ((a).bytes[27] != (b).bytes[27]) || \
-    ((a).bytes[28] != (b).bytes[28]) || \
-    ((a).bytes[29] != (b).bytes[29]) || \
-    ((a).bytes[30] != (b).bytes[30]) || \
-    ((a).bytes[31] != (b).bytes[31])\
-)
-
+#define _vm_equal_ui(bitdepth)\
+vm_bool _cat(vm_equal_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    vm_bool result = true;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result = result && (a.bytes[i] == b.bytes[i]);\
+    return result;\
+}
+#define _vm_not_equal_ui(bitdepth)\
+vm_bool _cat(vm_not_equal_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    vm_bool result = false;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result = result || (a.bytes[i] != b.bytes[i]);\
+    return result;\
+}
 
 // bitwise
-#define _vm_byte_by_byte_operation16(a, b, op, type) (type){\
-    (a).bytes[0] op (b).bytes[0],\
-    (a).bytes[1] op (b).bytes[1]\
+#define _vm_and_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_and_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    _vm_ui(bitdepth) result;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result.bytes[i] = (a.bytes[i] & b.bytes[i]);\
+    return result;\
 }
-#define _vm_byte_by_byte_operation32(a, b, op, type) (type){\
-    (a).bytes[0] op (b).bytes[0],\
-    (a).bytes[1] op (b).bytes[1],\
-    (a).bytes[2] op (b).bytes[2],\
-    (a).bytes[3] op (b).bytes[3]\
+#define _vm_or_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_or_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    _vm_ui(bitdepth) result;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result.bytes[i] = (a.bytes[i] | b.bytes[i]);\
+    return result;\
 }
-#define _vm_byte_by_byte_operation64(a, b, op, type) (type){\
-    (a).bytes[0] op (b).bytes[0],\
-    (a).bytes[1] op (b).bytes[1],\
-    (a).bytes[2] op (b).bytes[2],\
-    (a).bytes[3] op (b).bytes[3],\
-    (a).bytes[4] op (b).bytes[4],\
-    (a).bytes[5] op (b).bytes[5],\
-    (a).bytes[6] op (b).bytes[6],\
-    (a).bytes[7] op (b).bytes[7]\
+#define _vm_xor_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_xor_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    _vm_ui(bitdepth) result;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result.bytes[i] = (a.bytes[i] ^ b.bytes[i]);\
+    return result;\
 }
-#define _vm_byte_by_byte_operation128(a, b, op, type) (type){\
-    (a).bytes[0] op (b).bytes[0],\
-    (a).bytes[1] op (b).bytes[1],\
-    (a).bytes[2] op (b).bytes[2],\
-    (a).bytes[3] op (b).bytes[3],\
-    (a).bytes[4] op (b).bytes[4],\
-    (a).bytes[5] op (b).bytes[5],\
-    (a).bytes[6] op (b).bytes[6],\
-    (a).bytes[7] op (b).bytes[7],\
-    (a).bytes[8] op (b).bytes[8],\
-    (a).bytes[9] op (b).bytes[9],\
-    (a).bytes[10] op (b).bytes[10],\
-    (a).bytes[11] op (b).bytes[11],\
-    (a).bytes[12] op (b).bytes[12],\
-    (a).bytes[13] op (b).bytes[13],\
-    (a).bytes[14] op (b).bytes[14],\
-    (a).bytes[15] op (b).bytes[15]\
-}
-#define _vm_byte_by_byte_operation256(a, b, op, type) (type){\
-    (a).bytes[0] op (b).bytes[0],\
-    (a).bytes[1] op (b).bytes[1],\
-    (a).bytes[2] op (b).bytes[2],\
-    (a).bytes[3] op (b).bytes[3],\
-    (a).bytes[4] op (b).bytes[4],\
-    (a).bytes[5] op (b).bytes[5],\
-    (a).bytes[6] op (b).bytes[6],\
-    (a).bytes[7] op (b).bytes[7],\
-    (a).bytes[8] op (b).bytes[8],\
-    (a).bytes[9] op (b).bytes[9],\
-    (a).bytes[10] op (b).bytes[10],\
-    (a).bytes[11] op (b).bytes[11],\
-    (a).bytes[12] op (b).bytes[12],\
-    (a).bytes[13] op (b).bytes[13],\
-    (a).bytes[14] op (b).bytes[14],\
-    (a).bytes[16] op (b).bytes[16],\
-    (a).bytes[17] op (b).bytes[17],\
-    (a).bytes[18] op (b).bytes[18],\
-    (a).bytes[19] op (b).bytes[19],\
-    (a).bytes[20] op (b).bytes[20],\
-    (a).bytes[21] op (b).bytes[21],\
-    (a).bytes[22] op (b).bytes[22],\
-    (a).bytes[23] op (b).bytes[23],\
-    (a).bytes[24] op (b).bytes[24],\
-    (a).bytes[25] op (b).bytes[25],\
-    (a).bytes[26] op (b).bytes[26],\
-    (a).bytes[27] op (b).bytes[27],\
-    (a).bytes[28] op (b).bytes[28],\
-    (a).bytes[29] op (b).bytes[29],\
-    (a).bytes[30] op (b).bytes[30],\
-    (a).bytes[31] op (b).bytes[31]\
+#define _vm_inverse_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_inverse_ui, bitdepth)(_vm_ui(bitdepth) a){\
+    _vm_ui(bitdepth) result;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++) result.bytes[i] = ~a.bytes[i];\
+    return result;\
 }
 
-#define vm_and_u16(a, b) _vm_byte_by_byte_operation16(a, b, &, vm_uint16_t)
-#define vm_or_u16(a, b) _vm_byte_by_byte_operation16(a, b, |, vm_uint16_t)
-#define vm_xor_u16(a, b) _vm_byte_by_byte_operation16(a, b, ^, vm_uint16_t)
-#define vm_inverse_u16(a) (vm_uint16_t){~(a).bytes[0], ~(a).bytes[1]}
+// arithmetic
+#define _vm_ui_sum_of(a, b) ((int)(a) >= 256 - (int)(b) ? 1 : 0)
 
-#define vm_and_u32(a, b) _vm_byte_by_byte_operation32(a, b, &, vm_uint32_t)
-#define vm_or_u32(a, b) _vm_byte_by_byte_operation32(a, b, |, vm_uint32_t)
-#define vm_xor_u32(a, b) _vm_byte_by_byte_operation32(a, b, ^, vm_uint32_t)
-#define vm_inverse_u32(a) (vm_uint32_t){\
-    ~(a).bytes[0], ~(a).bytes[1],\
-    ~(a).bytes[2], ~(a).bytes[3]\
+#define _vm_inc_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_inc_ui, bitdepth)(_vm_ui(bitdepth) a){\
+    _vm_ui(bitdepth) result;\
+    vm_uint8_t of = 1;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++){\
+        result.bytes[_vm_ui_size(bitdepth) - i - 1] = a.bytes[_vm_ui_size(bitdepth) - i - 1] + of;\
+        if(i > 0) of = _vm_ui_sum_of(a.bytes[_vm_ui_size(bitdepth) - i], of);\
+    }\
+    return result;\
 }
 
-#define vm_and_u64(a, b) _vm_byte_by_byte_operation64(a, b, &, vm_uint64_t)
-#define vm_or_u64(a, b) _vm_byte_by_byte_operation64(a, b, |, vm_uint64_t)
-#define vm_xor_u64(a, b) _vm_byte_by_byte_operation64(a, b, ^, vm_uint64_t)
-#define vm_inverse_u64(a) (vm_uint64_t){\
-    ~(a).bytes[0], ~(a).bytes[1],\
-    ~(a).bytes[2], ~(a).bytes[3],\
-    ~(a).bytes[4], ~(a).bytes[5],\
-    ~(a).bytes[6], ~(a).bytes[7]\
-}
+_vm_equal_ui(16)
+_vm_equal_ui(32)
+_vm_equal_ui(64)
+_vm_equal_ui(128)
+_vm_equal_ui(256)
 
-#define vm_and_u128(a, b) _vm_byte_by_byte_operation128(a, b, &, vm_uint128_t)
-#define vm_or_u128(a, b) _vm_byte_by_byte_operation128(a, b, |, vm_uint128_t)
-#define vm_xor_u128(a, b) _vm_byte_by_byte_operation128(a, b, ^, vm_uint128_t)
-#define vm_inverse_u128(a) (vm_uint128_t){\
-    ~(a).bytes[0], ~(a).bytes[1],\
-    ~(a).bytes[2], ~(a).bytes[3],\
-    ~(a).bytes[4], ~(a).bytes[5],\
-    ~(a).bytes[6], ~(a).bytes[7],\
-    ~(a).bytes[8], ~(a).bytes[9],\
-    ~(a).bytes[10], ~(a).bytes[11],\
-    ~(a).bytes[12], ~(a).bytes[13],\
-    ~(a).bytes[14], ~(a).bytes[15]\
-}
+_vm_not_equal_ui(16)
+_vm_not_equal_ui(32)
+_vm_not_equal_ui(64)
+_vm_not_equal_ui(128)
+_vm_not_equal_ui(256)
 
-#define vm_and_u256(a, b) _vm_byte_by_byte_operation256(a, b, &, vm_uint256_t)
-#define vm_or_u256(a, b) _vm_byte_by_byte_operation256(a, b, |, vm_uint256_t)
-#define vm_xor_u256(a, b) _vm_byte_by_byte_operation256(a, b, ^, vm_uint256_t)
-#define vm_inverse_u256(a) (vm_uint256_t){\
-    ~(a).bytes[0], ~(a).bytes[1],\
-    ~(a).bytes[2], ~(a).bytes[3],\
-    ~(a).bytes[4], ~(a).bytes[5],\
-    ~(a).bytes[6], ~(a).bytes[7],\
-    ~(a).bytes[8], ~(a).bytes[9],\
-    ~(a).bytes[10], ~(a).bytes[11],\
-    ~(a).bytes[12], ~(a).bytes[13],\
-    ~(a).bytes[14], ~(a).bytes[15],\
-    ~(a).bytes[16], ~(a).bytes[17],\
-    ~(a).bytes[18], ~(a).bytes[19],\
-    ~(a).bytes[20], ~(a).bytes[21],\
-    ~(a).bytes[22], ~(a).bytes[23],\
-    ~(a).bytes[24], ~(a).bytes[25],\
-    ~(a).bytes[26], ~(a).bytes[27],\
-    ~(a).bytes[28], ~(a).bytes[29],\
-    ~(a).bytes[30], ~(a).bytes[31]\
-}
+_vm_and_ui(16)
+_vm_and_ui(32)
+_vm_and_ui(64)
+_vm_and_ui(128)
+_vm_and_ui(256)
+
+_vm_or_ui(16)
+_vm_or_ui(32)
+_vm_or_ui(64)
+_vm_or_ui(128)
+_vm_or_ui(256)
+
+_vm_xor_ui(16)
+_vm_xor_ui(32)
+_vm_xor_ui(64)
+_vm_xor_ui(128)
+_vm_xor_ui(256)
+
+_vm_inverse_ui(16)
+_vm_inverse_ui(32)
+_vm_inverse_ui(64)
+_vm_inverse_ui(128)
+_vm_inverse_ui(256)
+
+_vm_inc_ui(16)
+_vm_inc_ui(32)
+_vm_inc_ui(64)
+_vm_inc_ui(128)
+_vm_inc_ui(256)

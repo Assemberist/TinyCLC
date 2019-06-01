@@ -240,6 +240,10 @@ void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
     else vm->halt = true;
 }
 
+void _vm_push8_num(vm_uint8_t* num, VMInstance* vm){
+    
+}
+
 /////////////////////////////////////////////////////
 //       GLOBAL INSTRUCTION DESCRIPTORS TABLE
 /////////////////////////////////////////////////////
@@ -330,7 +334,7 @@ const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, V
     vm_size_t size = idt->size;
 
     for(vm_size_t i = 0; i < size; i++){
-        if(vm_equal32(*icode, idt->idt[i].icode)) return idt->idt + i;
+        if(vm_equal_ui32(*icode, idt->idt[i].icode)) return idt->idt + i;
     }    
     return NULL;
 }
