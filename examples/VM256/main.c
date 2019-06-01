@@ -9,11 +9,13 @@ int main(){
     // VMInstance vm = VMInstanceDefault;
 
     // // bytecode
-    // vm_uint32_t icode = {0x00, 0x00, 0x00, 0xA0};
+    // vm_uint32_t icode = {0x00, 0x00, 0x00, 0x0A};
+    // vm_uint8_t op = 4;
 
     // // instructions
     // VMInstruction i = {
-    //     .icode = &icode
+    //     .icode = &icode,
+    //     .op0 = &op
     // };
 
     // vmExecInstruction(&i, &vm, NULL);
@@ -21,12 +23,11 @@ int main(){
     // if(vm.halt)
     //     printf("Wrong instruction! VMInstance %p halted\n", &vm);
 
-    vm_uint128_t _a = {0xfe, 0x21, 0x30, 0xaa, 0xfe, 0x31, 0x3b, 0x04, 0xff, 0x01, 0xa0, 0x22, 0xee, 0x11, 0x3a, 0x01};
+    vm_uint32_t a = {
+        0x00, 0x00, 0x00, 0x00
+    };
 
-    vm_size_t a = 0xff01a022ee113a01;
-    vm_size_t b = vm_ui128_to_size_t(_a);
-
-    printf("%d %d\n", a, b);
+    vm_uint32_t b = vm_inc_ui32(a);
 
     return 0;
 }

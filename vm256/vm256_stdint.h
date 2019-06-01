@@ -181,6 +181,7 @@ _vm_ui(bitdepth) _cat(vm_inc_ui, bitdepth)(_vm_ui(bitdepth) a){\
     for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++){\
         result.bytes[_vm_ui_size(bitdepth) - i - 1] = a.bytes[_vm_ui_size(bitdepth) - i - 1] + of;\
         if(i > 0) of = _vm_ui_sum_of(a.bytes[_vm_ui_size(bitdepth) - i], of);\
+        else of = 0;\
     }\
     return result;\
 }

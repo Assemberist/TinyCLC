@@ -241,7 +241,8 @@ void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
 }
 
 void _vm_push8_num(vm_uint8_t* num, VMInstance* vm){
-    
+    vm->stack8[vm_ui256_to_size_t(vm->rsp8)] = *num;
+    vm->rsp8 = vm_inc_ui256(vm->rsp8);
 }
 
 /////////////////////////////////////////////////////
@@ -321,9 +322,17 @@ VMInstructionDescriptorsTable GIDT = {
             .icode = {0x00, 0x00, 0x00, 0x09},
             .alias = "snd",
             .impl = _vm_snd_num_r256
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = NUMBER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x0A},
+            .alias = "push8",
+            .impl = _vm_push8_num
         }
     },
-    .size = 9
+    .size = 10
 };
 
 
