@@ -4,6 +4,7 @@
 #define VM_STACK_SIZE 8192
 #define VM_IDT_SIZE 1024
 #define VM_ID_EXT_SIZE 1024
+#define VM_PROGRAM_SIZE 1024
 
 /////////////////////////////////////////
 //              REGISTERS
@@ -153,6 +154,12 @@ typedef struct VMInstruction{
     const void* op1;
     const void* op2;
 } VMInstruction;
+
+typedef struct VMProgram{
+    VMInstruction program[VM_PROGRAM_SIZE];
+    vm_size_t size;
+} VMProgram;
+
 
 
 /////////////////////////////////////////////////////
@@ -690,4 +697,23 @@ void vmExecInstruction(VMInstruction* instr, VMInstance* vm, VMInstructionDescri
             }
         }
     }else ; // do some exception here
+}
+
+void vmExecProgram(VMProgram* prog, VMInstance* vm, VMInstructionDescriptorsExt* ext){
+    VM_UINT256_T(vm->rip) = (vm_uint256_t){
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00
+    };
+
+    for(vm_size_t i = 0; i < prog->size; i++){
+        if(vm->halt) break;
+        vmExecInstruction(prog->program + vm_ui256_to_size_t(vm->rip), vm, ext);
+        VM_UINT256_T(vm->rip) = vm_inc_ui256(VM_UINT256_T(vm->rip));
+    }
 }

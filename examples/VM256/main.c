@@ -7,29 +7,37 @@
 
 int main(){
     VMInstance vm = VMInstanceDefault;
-    vm.stack256[0] = (vm_uint256_t){
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-        0xa0, 0x04, 0x11, 0x0a,
-    };
-    vm.rsp256 = vm_inc_ui256(vm.rsp256);
+
+    // assembly
+    /*
+        push8 14
+        pop8 r8_0
+    */
 
     // bytecode
-    vm_uint32_t icode = {0x00, 0x00, 0x00, 0x1B};
-    vm_uint8_t op = VM_R256_START;
+    vm_uint32_t icode0 = {0x00, 0x00, 0x00, 0x0a};
+    vm_uint8_t op0 = 14;
 
-    // instructions
-    VMInstruction i = {
-        .icode = &icode,
-        .op0 = &op
+    vm_uint32_t icode1 = {0x00, 0x00, 0x00, 0x16};
+    vm_uint8_t op1 = 0;
+
+
+    // program
+    VMProgram prog = {
+        .program = {
+            (VMInstruction){
+                .icode = &icode0,
+                .op0 = &op0
+            },
+            (VMInstruction){
+                .icode = &icode1,
+                .op0 = &op1
+            }
+        },
+        .size = 2
     };
-
-    vmExecInstruction(&i, &vm, NULL);
+    
+    vmExecProgram(&prog, &vm, NULL);
 
     if(vm.halt)
         printf("Wrong instruction! VMInstance %p halted\n", &vm);
