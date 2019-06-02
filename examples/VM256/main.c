@@ -6,32 +6,37 @@
 
 
 int main(){
-    VMInstance vm = VMInstanceDefault;
-    VM_UINT256_T(VM_R256(0, vm)) = (vm_uint256_t){
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff,
-        0x0a, 0x03, 0x11, 0xff
+    // VMInstance vm = VMInstanceDefault;
+    // vm.stack8[0] = 4;
+    // vm.rsp8 = vm_inc_ui256(vm.rsp8);
+
+    // // bytecode
+    // vm_uint32_t icode = {0x00, 0x00, 0x00, 0x16};
+    // vm_uint8_t op = 0;
+
+    // // instructions
+    // VMInstruction i = {
+    //     .icode = &icode,
+    //     .op0 = &op
+    // };
+
+    // vmExecInstruction(&i, &vm, NULL);
+
+    // if(vm.halt)
+    //     printf("Wrong instruction! VMInstance %p halted\n", &vm);
+
+    vm_uint256_t a = {
+        0xa1, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00
     };
 
-    // bytecode
-    vm_uint32_t icode = {0x00, 0x00, 0x00, 0x15};
-    vm_uint8_t op = VM_R256_START;
-
-    // instructions
-    VMInstruction i = {
-        .icode = &icode,
-        .op0 = &op
-    };
-
-    vmExecInstruction(&i, &vm, NULL);
-
-    if(vm.halt)
-        printf("Wrong instruction! VMInstance %p halted\n", &vm);
+    vm_uint256_t b = vm_dec_ui256(a);
 
     return 0;
 }

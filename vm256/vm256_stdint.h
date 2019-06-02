@@ -172,19 +172,31 @@ _vm_ui(bitdepth) _cat(vm_inverse_ui, bitdepth)(_vm_ui(bitdepth) a){\
 }
 
 // arithmetic
-#define _vm_ui_sum_of(a, b) ((int)(a) >= 256 - (int)(b) ? 1 : 0)
 
 #define _vm_inc_ui(bitdepth)\
 _vm_ui(bitdepth) _cat(vm_inc_ui, bitdepth)(_vm_ui(bitdepth) a){\
     _vm_ui(bitdepth) result;\
     vm_uint8_t of = 1;\
     for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++){\
+        if(i > 0 && of != 0) of = a.bytes[_vm_ui_size(bitdepth) - i] == 0xff ? 1 : 0;\
         result.bytes[_vm_ui_size(bitdepth) - i - 1] = a.bytes[_vm_ui_size(bitdepth) - i - 1] + of;\
-        if(i > 0) of = _vm_ui_sum_of(a.bytes[_vm_ui_size(bitdepth) - i], of);\
-        else of = 0;\
     }\
     return result;\
 }
+
+#define _vm_dec_ui(bitdepth)\
+_vm_ui(bitdepth) _cat(vm_dec_ui, bitdepth)(_vm_ui(bitdepth) a){\
+    _vm_ui(bitdepth) result;\
+    vm_uint8_t of = 1;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++){\
+        if(i > 0 && of != 0) of = a.bytes[_vm_ui_size(bitdepth) - i] == 0 ? 1 : 0;\
+        result.bytes[_vm_ui_size(bitdepth) - i - 1] = a.bytes[_vm_ui_size(bitdepth) - i - 1] - of;\
+    }\
+    return result;\
+}
+
+
+
 
 _vm_equal_ui(16)
 _vm_equal_ui(32)
@@ -227,3 +239,9 @@ _vm_inc_ui(32)
 _vm_inc_ui(64)
 _vm_inc_ui(128)
 _vm_inc_ui(256)
+
+_vm_dec_ui(16)
+_vm_dec_ui(32)
+_vm_dec_ui(64)
+_vm_dec_ui(128)
+_vm_dec_ui(256)

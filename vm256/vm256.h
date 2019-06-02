@@ -326,6 +326,16 @@ void _vm_push256_r(vm_uint8_t* reg, VMInstance* vm){
     }else vm->halt = true;
 }
 
+void _vm_pop8(vm_uint8_t* reg, VMInstance* vm){
+    // pop8 r8
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R8_INDEX_INBOUNDS(_reg)){
+        VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = vm->stack8[vm_ui256_to_size_t(vm->rsp8)];
+        vm->rsp8 = vm_dec_ui256(vm->rsp8);
+    }else vm->halt = true;
+}
+
 
 /////////////////////////////////////////////////////
 //       GLOBAL INSTRUCTION DESCRIPTORS TABLE
@@ -464,7 +474,7 @@ VMInstructionDescriptorsTable GIDT = {
         (VMInstructionDescriptor){
             .itype = SINGLE,
             .op0_type = REGISTER,
-            .op0_size = UINT16_T,
+            .op0_size = UINT8_T,
             .icode = {0x00, 0x00, 0x00, 0x11},
             .alias = "push16",
             .impl = _vm_push16_r
@@ -472,7 +482,7 @@ VMInstructionDescriptorsTable GIDT = {
         (VMInstructionDescriptor){
             .itype = SINGLE,
             .op0_type = REGISTER,
-            .op0_size = UINT32_T,
+            .op0_size = UINT8_T,
             .icode = {0x00, 0x00, 0x00, 0x12},
             .alias = "push32",
             .impl = _vm_push32_r
@@ -480,7 +490,7 @@ VMInstructionDescriptorsTable GIDT = {
         (VMInstructionDescriptor){
             .itype = SINGLE,
             .op0_type = REGISTER,
-            .op0_size = UINT64_T,
+            .op0_size = UINT8_T,
             .icode = {0x00, 0x00, 0x00, 0x13},
             .alias = "push64",
             .impl = _vm_push64_r
@@ -488,7 +498,7 @@ VMInstructionDescriptorsTable GIDT = {
         (VMInstructionDescriptor){
             .itype = SINGLE,
             .op0_type = REGISTER,
-            .op0_size = UINT128_T,
+            .op0_size = UINT8_T,
             .icode = {0x00, 0x00, 0x00, 0x14},
             .alias = "push128",
             .impl = _vm_push128_r
@@ -496,13 +506,21 @@ VMInstructionDescriptorsTable GIDT = {
         (VMInstructionDescriptor){
             .itype = SINGLE,
             .op0_type = REGISTER,
-            .op0_size = UINT256_T,
+            .op0_size = UINT8_T,
             .icode = {0x00, 0x00, 0x00, 0x15},
             .alias = "push256",
             .impl = _vm_push256_r
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x16},
+            .alias = "pop8",
+            .impl = _vm_pop8
         }
     },
-    .size = 21
+    .size = 22
 };
 
 
