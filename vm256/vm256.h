@@ -159,6 +159,39 @@ typedef struct VMInstruction{
 //       BASE INSTRUCTION SET IMPLEMENTATIONS
 /////////////////////////////////////////////////////
 
+/*
+    go adr
+    go reg256
+
+    snd from_r, to_r
+    snd num, r8
+    snd num, r16
+    snd num, r32
+    snd num, r64
+    snd num, r128
+    snd num, r256
+
+    push8 num
+    push16 num
+    push32 num
+    push64 num
+    push128 num
+    push256 num
+    push8 r8
+    push16 r16
+    push32 r32
+    push64 r64
+    push128 r128
+    push256 r256
+
+    pop8 r8
+    pop16 r16
+    pop32 r32
+    pop64 r64
+    pop128 r128
+    pop256 r256
+*/
+
 void _vm_go_adr(vm_uint256_t* adr, VMInstance* vm){
     // go adr
     vm->rip = *adr;
@@ -331,8 +364,53 @@ void _vm_pop8(vm_uint8_t* reg, VMInstance* vm){
     vm_uint8_t _reg = *reg;
 
     if(VM_R8_INDEX_INBOUNDS(_reg)){
-        VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = vm->stack8[vm_ui256_to_size_t(vm->rsp8)];
         vm->rsp8 = vm_dec_ui256(vm->rsp8);
+        VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = vm->stack8[vm_ui256_to_size_t(vm->rsp8)];
+    }else vm->halt = true;
+}
+void _vm_pop16(vm_uint8_t* reg, VMInstance* vm){
+    // pop16 r16
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R16_INDEX_INBOUNDS(_reg)){
+        vm->rsp16 = vm_dec_ui256(vm->rsp16);
+        VM_UINT16_T(VM_R16(*reg - VM_R16_END, *vm)) = vm->stack16[vm_ui256_to_size_t(vm->rsp16)];
+    }else vm->halt = true;
+}
+void _vm_pop32(vm_uint8_t* reg, VMInstance* vm){
+    // pop32 r32
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R32_INDEX_INBOUNDS(_reg)){
+        vm->rsp32 = vm_dec_ui256(vm->rsp32);
+        VM_UINT32_T(VM_R32(*reg - VM_R32_END, *vm)) = vm->stack32[vm_ui256_to_size_t(vm->rsp32)];
+    }else vm->halt = true;
+}
+void _vm_pop64(vm_uint8_t* reg, VMInstance* vm){
+    // pop64 r64
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R64_INDEX_INBOUNDS(_reg)){
+        vm->rsp64 = vm_dec_ui256(vm->rsp64);
+        VM_UINT64_T(VM_R64(*reg - VM_R64_END, *vm)) = vm->stack64[vm_ui256_to_size_t(vm->rsp64)];
+    }else vm->halt = true;
+}
+void _vm_pop128(vm_uint8_t* reg, VMInstance* vm){
+    // pop128 r128
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R128_INDEX_INBOUNDS(_reg)){
+        vm->rsp128 = vm_dec_ui256(vm->rsp128);
+        VM_UINT128_T(VM_R128(*reg - VM_R128_END, *vm)) = vm->stack128[vm_ui256_to_size_t(vm->rsp128)];
+    }else vm->halt = true;
+}
+void _vm_pop256(vm_uint8_t* reg, VMInstance* vm){
+    // pop256 r256
+    vm_uint8_t _reg = *reg;
+
+    if(VM_R256_INDEX_INBOUNDS(_reg)){
+        vm->rsp256 = vm_dec_ui256(vm->rsp256);
+        VM_UINT256_T(VM_R256(*reg - VM_R256_END, *vm)) = vm->stack256[vm_ui256_to_size_t(vm->rsp256)];
     }else vm->halt = true;
 }
 
@@ -518,9 +596,49 @@ VMInstructionDescriptorsTable GIDT = {
             .icode = {0x00, 0x00, 0x00, 0x16},
             .alias = "pop8",
             .impl = _vm_pop8
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x17},
+            .alias = "pop16",
+            .impl = _vm_pop16
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x18},
+            .alias = "pop32",
+            .impl = _vm_pop32
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x19},
+            .alias = "pop64",
+            .impl = _vm_pop64
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x1A},
+            .alias = "pop128",
+            .impl = _vm_pop128
+        },
+        (VMInstructionDescriptor){
+            .itype = SINGLE,
+            .op0_type = REGISTER,
+            .op0_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x1B},
+            .alias = "pop256",
+            .impl = _vm_pop256
         }
     },
-    .size = 22
+    .size = 27
 };
 
 
