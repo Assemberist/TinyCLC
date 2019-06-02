@@ -160,6 +160,11 @@ typedef struct VMProgram{
     vm_size_t size;
 } VMProgram;
 
+typedef struct VMParser{
+    VMInstruction instr;
+    const vm_uint8_t* next;
+} VMParser;
+
 
 
 /////////////////////////////////////////////////////
@@ -199,11 +204,11 @@ typedef struct VMProgram{
     pop256 r256
 */
 
-void _vm_go_adr(vm_uint256_t* adr, VMInstance* vm){
+void _vm_go_adr(const vm_uint256_t* adr, VMInstance* vm){
     // go adr
     vm->rip = *adr;
 }
-void _vm_go_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_go_r(const vm_uint8_t* reg, VMInstance* vm){
     // go r256
     vm_uint8_t _reg = *reg;
 
@@ -212,7 +217,7 @@ void _vm_go_r(vm_uint8_t* reg, VMInstance* vm){
     else vm->halt = true;
 }
 
-void _vm_snd_r_r(vm_uint8_t* reg0, vm_uint8_t* reg1, VMInstance* vm){
+void _vm_snd_r_r(const vm_uint8_t* reg0, const vm_uint8_t* reg1, VMInstance* vm){
     // snd from_r, to_r
     vm_uint8_t _reg0 = *reg0;
     vm_uint8_t _reg1 = *reg1;
@@ -231,7 +236,7 @@ void _vm_snd_r_r(vm_uint8_t* reg0, vm_uint8_t* reg1, VMInstance* vm){
         VM_R256(_reg1 - VM_R256_END, *vm) = VM_R256(_reg0 - VM_R256_END, *vm);
     else vm->halt = true;
 }
-void _vm_snd_num_r8(vm_uint8_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r8(const vm_uint8_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r8
     vm_uint8_t _reg = *reg;
 
@@ -239,7 +244,7 @@ void _vm_snd_num_r8(vm_uint8_t* num, vm_uint8_t* reg, VMInstance* vm){
         VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = *num;
     else vm->halt = true;
 }
-void _vm_snd_num_r16(vm_uint16_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r16(const vm_uint16_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r16
     vm_uint8_t _reg = *reg;
 
@@ -247,7 +252,7 @@ void _vm_snd_num_r16(vm_uint16_t* num, vm_uint8_t* reg, VMInstance* vm){
         VM_UINT16_T(VM_R16(*reg - VM_R16_END, *vm)) = *num;
     else vm->halt = true;
 }
-void _vm_snd_num_r32(vm_uint32_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r32(const vm_uint32_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r32
     vm_uint8_t _reg = *reg;
 
@@ -255,7 +260,7 @@ void _vm_snd_num_r32(vm_uint32_t* num, vm_uint8_t* reg, VMInstance* vm){
         VM_UINT32_T(VM_R32(*reg - VM_R32_END, *vm)) = *num;
     else vm->halt = true;
 }
-void _vm_snd_num_r64(vm_uint64_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r64(const vm_uint64_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r64
     vm_uint8_t _reg = *reg;
 
@@ -263,7 +268,7 @@ void _vm_snd_num_r64(vm_uint64_t* num, vm_uint8_t* reg, VMInstance* vm){
         VM_UINT64_T(VM_R64(*reg - VM_R64_END, *vm)) = *num;
     else vm->halt = true;
 }
-void _vm_snd_num_r128(vm_uint128_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r128(const vm_uint128_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r128
     vm_uint8_t _reg = *reg;
 
@@ -271,7 +276,7 @@ void _vm_snd_num_r128(vm_uint128_t* num, vm_uint8_t* reg, VMInstance* vm){
         VM_UINT128_T(VM_R128(*reg - VM_R128_END, *vm)) = *num;
     else vm->halt = true;
 }
-void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
+void _vm_snd_num_r256(const vm_uint256_t* num, const vm_uint8_t* reg, VMInstance* vm){
     // snd num, r256
     vm_uint8_t _reg = *reg;
 
@@ -280,38 +285,38 @@ void _vm_snd_num_r256(vm_uint256_t* num, vm_uint8_t* reg, VMInstance* vm){
     else vm->halt = true;
 }
 
-void _vm_push8_num(vm_uint8_t* num, VMInstance* vm){
+void _vm_push8_num(const vm_uint8_t* num, VMInstance* vm){
     // push8 num
     vm->stack8[vm_ui256_to_size_t(vm->rsp8)] = *num;
     vm->rsp8 = vm_inc_ui256(vm->rsp8);
 }
-void _vm_push16_num(vm_uint16_t* num, VMInstance* vm){
+void _vm_push16_num(const vm_uint16_t* num, VMInstance* vm){
     // push16 num
     vm->stack16[vm_ui256_to_size_t(vm->rsp16)] = *num;
     vm->rsp16 = vm_inc_ui256(vm->rsp16);
 }
-void _vm_push32_num(vm_uint32_t* num, VMInstance* vm){
+void _vm_push32_num(const vm_uint32_t* num, VMInstance* vm){
     // push32 num
     vm->stack32[vm_ui256_to_size_t(vm->rsp32)] = *num;
     vm->rsp32 = vm_inc_ui256(vm->rsp32);
 }
-void _vm_push64_num(vm_uint64_t* num, VMInstance* vm){
+void _vm_push64_num(const vm_uint64_t* num, VMInstance* vm){
     // push64 num
     vm->stack64[vm_ui256_to_size_t(vm->rsp64)] = *num;
     vm->rsp64 = vm_inc_ui256(vm->rsp64);
 }
-void _vm_push128_num(vm_uint128_t* num, VMInstance* vm){
+void _vm_push128_num(const vm_uint128_t* num, VMInstance* vm){
     // push128 num
     vm->stack128[vm_ui256_to_size_t(vm->rsp128)] = *num;
     vm->rsp128 = vm_inc_ui256(vm->rsp128);
 }
-void _vm_push256_num(vm_uint256_t* num, VMInstance* vm){
+void _vm_push256_num(const vm_uint256_t* num, VMInstance* vm){
     // push256 num
     vm->stack256[vm_ui256_to_size_t(vm->rsp256)] = *num;
     vm->rsp256 = vm_inc_ui256(vm->rsp256);
 }
 
-void _vm_push8_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push8_r(const vm_uint8_t* reg, VMInstance* vm){
     // push8 r8
     vm_uint8_t _reg = *reg;
 
@@ -320,7 +325,7 @@ void _vm_push8_r(vm_uint8_t* reg, VMInstance* vm){
         vm->rsp8 = vm_inc_ui256(vm->rsp8);
     }else vm->halt = true;
 }
-void _vm_push16_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push16_r(const vm_uint8_t* reg, VMInstance* vm){
     // push16 r16
     vm_uint8_t _reg = *reg;
 
@@ -329,7 +334,7 @@ void _vm_push16_r(vm_uint8_t* reg, VMInstance* vm){
         vm->rsp16 = vm_inc_ui256(vm->rsp16);
     }else vm->halt = true;
 }
-void _vm_push32_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push32_r(const vm_uint8_t* reg, VMInstance* vm){
     // push32 r32
     vm_uint8_t _reg = *reg;
 
@@ -338,7 +343,7 @@ void _vm_push32_r(vm_uint8_t* reg, VMInstance* vm){
         vm->rsp32 = vm_inc_ui256(vm->rsp32);
     }else vm->halt = true;
 }
-void _vm_push64_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push64_r(const vm_uint8_t* reg, VMInstance* vm){
     // push64 r64
     vm_uint8_t _reg = *reg;
 
@@ -347,7 +352,7 @@ void _vm_push64_r(vm_uint8_t* reg, VMInstance* vm){
         vm->rsp64 = vm_inc_ui256(vm->rsp64);
     }else vm->halt = true;
 }
-void _vm_push128_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push128_r(const vm_uint8_t* reg, VMInstance* vm){
     // push128 r128
     vm_uint8_t _reg = *reg;
 
@@ -356,7 +361,7 @@ void _vm_push128_r(vm_uint8_t* reg, VMInstance* vm){
         vm->rsp128 = vm_inc_ui256(vm->rsp128);
     }else vm->halt = true;
 }
-void _vm_push256_r(vm_uint8_t* reg, VMInstance* vm){
+void _vm_push256_r(const vm_uint8_t* reg, VMInstance* vm){
     // push256 r256
     vm_uint8_t _reg = *reg;
 
@@ -366,7 +371,7 @@ void _vm_push256_r(vm_uint8_t* reg, VMInstance* vm){
     }else vm->halt = true;
 }
 
-void _vm_pop8(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop8(const vm_uint8_t* reg, VMInstance* vm){
     // pop8 r8
     vm_uint8_t _reg = *reg;
 
@@ -375,7 +380,7 @@ void _vm_pop8(vm_uint8_t* reg, VMInstance* vm){
         VM_UINT8_T(VM_R8(*reg - VM_R8_END, *vm)) = vm->stack8[vm_ui256_to_size_t(vm->rsp8)];
     }else vm->halt = true;
 }
-void _vm_pop16(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop16(const vm_uint8_t* reg, VMInstance* vm){
     // pop16 r16
     vm_uint8_t _reg = *reg;
 
@@ -384,7 +389,7 @@ void _vm_pop16(vm_uint8_t* reg, VMInstance* vm){
         VM_UINT16_T(VM_R16(*reg - VM_R16_END, *vm)) = vm->stack16[vm_ui256_to_size_t(vm->rsp16)];
     }else vm->halt = true;
 }
-void _vm_pop32(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop32(const vm_uint8_t* reg, VMInstance* vm){
     // pop32 r32
     vm_uint8_t _reg = *reg;
 
@@ -393,7 +398,7 @@ void _vm_pop32(vm_uint8_t* reg, VMInstance* vm){
         VM_UINT32_T(VM_R32(*reg - VM_R32_END, *vm)) = vm->stack32[vm_ui256_to_size_t(vm->rsp32)];
     }else vm->halt = true;
 }
-void _vm_pop64(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop64(const vm_uint8_t* reg, VMInstance* vm){
     // pop64 r64
     vm_uint8_t _reg = *reg;
 
@@ -402,7 +407,7 @@ void _vm_pop64(vm_uint8_t* reg, VMInstance* vm){
         VM_UINT64_T(VM_R64(*reg - VM_R64_END, *vm)) = vm->stack64[vm_ui256_to_size_t(vm->rsp64)];
     }else vm->halt = true;
 }
-void _vm_pop128(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop128(const vm_uint8_t* reg, VMInstance* vm){
     // pop128 r128
     vm_uint8_t _reg = *reg;
 
@@ -411,7 +416,7 @@ void _vm_pop128(vm_uint8_t* reg, VMInstance* vm){
         VM_UINT128_T(VM_R128(*reg - VM_R128_END, *vm)) = vm->stack128[vm_ui256_to_size_t(vm->rsp128)];
     }else vm->halt = true;
 }
-void _vm_pop256(vm_uint8_t* reg, VMInstance* vm){
+void _vm_pop256(const vm_uint8_t* reg, VMInstance* vm){
     // pop256 r256
     vm_uint8_t _reg = *reg;
 
@@ -652,7 +657,7 @@ VMInstructionDescriptorsTable GIDT = {
 /////////////////////////////////////////
 //               METHODS
 /////////////////////////////////////////
-const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, VMInstructionDescriptorsTable* idt){
+const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, const VMInstructionDescriptorsTable* idt){
     vm_size_t size = idt->size;
 
     for(vm_size_t i = 0; i < size; i++){
@@ -660,7 +665,7 @@ const VMInstructionDescriptor* _vmFindInstructionIDT(const vm_uint32_t* icode, V
     }    
     return NULL;
 }
-const VMInstructionDescriptor* vmFindInstruction(const vm_uint32_t* icode, VMInstructionDescriptorsExt* ext){
+const VMInstructionDescriptor* vmFindInstruction(const vm_uint32_t* icode, const VMInstructionDescriptorsExt* ext){
     const VMInstructionDescriptor* desc = _vmFindInstructionIDT(icode, &GIDT);
     if(desc != NULL) return desc;
 
@@ -674,7 +679,7 @@ const VMInstructionDescriptor* vmFindInstruction(const vm_uint32_t* icode, VMIns
     return NULL;
 }
 
-void vmExecInstruction(VMInstruction* instr, VMInstance* vm, VMInstructionDescriptorsExt* ext){
+void vmExecInstruction(const VMInstruction* instr, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
     if(vm->halt == false){
         const VMInstructionDescriptor* desc = vmFindInstruction(instr->icode, ext);
 
@@ -699,7 +704,7 @@ void vmExecInstruction(VMInstruction* instr, VMInstance* vm, VMInstructionDescri
     }else ; // do some exception here
 }
 
-void vmExecProgram(VMProgram* prog, VMInstance* vm, VMInstructionDescriptorsExt* ext){
+void vmExecProgram(const VMProgram* prog, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
     VM_UINT256_T(vm->rip) = (vm_uint256_t){
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
@@ -716,4 +721,45 @@ void vmExecProgram(VMProgram* prog, VMInstance* vm, VMInstructionDescriptorsExt*
         vmExecInstruction(prog->program + vm_ui256_to_size_t(vm->rip), vm, ext);
         VM_UINT256_T(vm->rip) = vm_inc_ui256(VM_UINT256_T(vm->rip));
     }
+}
+
+
+VMParser vmParseInstruction(const vm_uint8_t* bytecode, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
+    VMParser result = {
+        .instr = {.icode = NULL},
+        .next = bytecode
+    };
+
+    const VMInstructionDescriptor* desc = vmFindInstruction((vm_uint32_t*)bytecode, ext);
+
+    if(desc != NULL){
+        result.instr.icode = (vm_uint32_t*)bytecode;
+
+        switch (desc->itype){
+        case FREE:
+            result.next = bytecode + sizeof(vm_uint32_t);
+            return result;
+            break;
+        case SINGLE:
+            result.instr.op0 = bytecode + sizeof(vm_uint32_t);
+            result.next = bytecode + sizeof(vm_uint32_t) + desc->op0_size;
+            return result;
+            break;
+        case DOUBLE:
+            result.instr.op0 = bytecode + sizeof(vm_uint32_t);
+            result.instr.op1 = bytecode + sizeof(vm_uint32_t) + desc->op0_size;
+            result.next = bytecode + sizeof(vm_uint32_t) + desc->op0_size + desc->op1_size;
+            return result;
+        case TRIPLE:
+            result.instr.op0 = bytecode + sizeof(vm_uint32_t);
+            result.instr.op1 = bytecode + sizeof(vm_uint32_t) + desc->op0_size;
+            result.instr.op2 = bytecode + sizeof(vm_uint32_t) + desc->op0_size + desc->op1_size;
+            result.next = bytecode + sizeof(vm_uint32_t) + desc->op0_size + desc->op1_size + desc->op2_size;
+            return result;
+        default:
+            break;
+        }
+    }
+
+    return result;
 }
