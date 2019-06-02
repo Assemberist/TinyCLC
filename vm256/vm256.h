@@ -763,3 +763,16 @@ VMParser vmParseInstruction(const vm_uint8_t* bytecode, VMInstance* vm, const VM
 
     return result;
 }
+
+VMProgram vmParseProgram(const vm_uint8_t* bytecode, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
+    VMProgram result = {.size = 0};
+
+    VMParser parser = vmParseInstruction(bytecode, vm, ext);
+
+    while(parser.instr.icode != NULL){
+        result.program[result.size++] = parser.instr;
+        parser = vmParseInstruction(parser.next, vm, ext);
+    }
+
+    return result;
+}

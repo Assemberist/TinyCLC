@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-#define VM_TARGET_ARCH64
+#define VM_TARGET_ARCH64 // for correct vm_size_t
 #include "vm256.h"
 
 
@@ -21,15 +21,9 @@ int main(){
     };
 
 
-    VMProgram prog = {.size = 2};
-
-    VMParser p = vmParseInstruction(bytecode, &vm, NULL);
-    prog.program[0] = p.instr;
-
-    p = vmParseInstruction(p.next, &vm, NULL);
-    prog.program[1] = p.instr;
-
+    VMProgram prog = vmParseProgram(bytecode, &vm, NULL);
     vmExecProgram(&prog, &vm, NULL);
+
 
     if(vm.halt)
         printf("Wrong instruction! VMInstance %p halted\n", &vm);
