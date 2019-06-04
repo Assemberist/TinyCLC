@@ -172,7 +172,6 @@ _vm_ui(bitdepth) _cat(vm_inverse_ui, bitdepth)(_vm_ui(bitdepth) a){\
 }
 
 // arithmetic
-
 #define _vm_inc_ui(bitdepth)\
 _vm_ui(bitdepth) _cat(vm_inc_ui, bitdepth)(_vm_ui(bitdepth) a){\
     _vm_ui(bitdepth) result;\
@@ -183,7 +182,6 @@ _vm_ui(bitdepth) _cat(vm_inc_ui, bitdepth)(_vm_ui(bitdepth) a){\
     }\
     return result;\
 }
-
 #define _vm_dec_ui(bitdepth)\
 _vm_ui(bitdepth) _cat(vm_dec_ui, bitdepth)(_vm_ui(bitdepth) a){\
     _vm_ui(bitdepth) result;\
@@ -195,6 +193,24 @@ _vm_ui(bitdepth) _cat(vm_dec_ui, bitdepth)(_vm_ui(bitdepth) a){\
     return result;\
 }
 
+#define _vm_add_ui_of(a, b, c) ((a) >= 0xff - (c)) || ((a) >= 0xff - (b)) || ((b) >= 0xff - (c)) ||((a) >= 0xff - (b) - (c) ? 1 : 0)
+
+#define _vm_add_ui(bitdepth)\
+typedef struct _cat(vm_add_ui, _cat(bitdepth, _result)){\
+    _vm_ui(bitdepth) result;\
+    vm_uint8_t rem;\
+} _cat(vm_add_ui, _cat(bitdepth, _result));\
+_cat(vm_add_ui, _cat(bitdepth, _result)) _cat(vm_add_ui, bitdepth)(_vm_ui(bitdepth) a, _vm_ui(bitdepth) b){\
+    _vm_ui(bitdepth) result;\
+    vm_uint8_t of_curr = 0;\
+    vm_uint8_t of_prev = 0;\
+    for(vm_size_t i = 0; i < _vm_ui_size(bitdepth); i++){\
+        of_curr = _vm_add_ui_of(a.bytes[_vm_ui_size(bitdepth) - i - 1], b.bytes[_vm_ui_size(bitdepth) - i - 1], of_prev);\
+        result.bytes[_vm_ui_size(bitdepth) - i - 1] = a.bytes[_vm_ui_size(bitdepth) - i - 1] + b.bytes[_vm_ui_size(bitdepth) - i - 1] + of_prev;\
+        of_prev = of_curr;\
+    }\
+    return (_cat(vm_add_ui, _cat(bitdepth, _result))){result, of_curr};\
+}
 
 
 
@@ -245,3 +261,9 @@ _vm_dec_ui(32)
 _vm_dec_ui(64)
 _vm_dec_ui(128)
 _vm_dec_ui(256)
+
+_vm_add_ui(16)
+_vm_add_ui(32)
+_vm_add_ui(64)
+_vm_add_ui(128)
+_vm_add_ui(256)
