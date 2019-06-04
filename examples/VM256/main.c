@@ -10,18 +10,20 @@ int main(){
 
     // program
     /*
-        rip: assembly   ; bytecode
-        0  : push8 14   ; 0x0000000a 0x0e
-        1  : pop8 r8_0  ; 0x00000016 0x00
+        rip: assembly          ; bytecode
+        0  : snd 5, r16_0      ; 0x00000005 0x0005 0x80
+        1  : dec r16_0, r16_1  ; 0x0000001d 0x80 0x81
     */
 
-    vm_uint8_t bytecode[10] = {
-        0x00, 0x00, 0x00, 0x0a, 0x0e,
-        0x00, 0x00, 0x00, 0x16, 0x00
+    vm_uint8_t bytecode[13] = {
+        0x00, 0x00, 0x00, 0x05,
+        0x00, 0x05, 0x80, 0x00, 
+        0x00, 0x00, 0x1d, 0x80,
+        0x81
     };
 
 
-    VMProgram prog = vmParseProgram(bytecode, &vm, NULL);
+    VMProgram prog = vmParseProgram(bytecode, NULL);
     vmExecProgram(&prog, &vm, NULL);
 
 

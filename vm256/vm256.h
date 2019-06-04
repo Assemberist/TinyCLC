@@ -202,6 +202,9 @@ typedef struct VMParser{
     pop64 r64
     pop128 r128
     pop256 r256
+
+    inc from_r, to_r
+    dec from_r, to_r
 */
 
 void _vm_go_adr(const vm_uint256_t* adr, VMInstance* vm){
@@ -426,6 +429,45 @@ void _vm_pop256(const vm_uint8_t* reg, VMInstance* vm){
     }else vm->halt = true;
 }
 
+void _vm_inc_r_r(const vm_uint8_t* reg0, const vm_uint8_t* reg1, VMInstance* vm){
+    // inc from_r, to_r ; snd from_r + 1, to_r
+    vm_uint8_t _reg0 = *reg0;
+    vm_uint8_t _reg1 = *reg1;
+
+    if(VM_R8_INDEX_INBOUNDS(_reg0) && VM_R8_INDEX_INBOUNDS(_reg1))
+        VM_UINT8_T(VM_R8(_reg1 - VM_R8_END, *vm)) = VM_UINT8_T(VM_R8(_reg0 - VM_R8_END, *vm)) + 1;
+    else if(VM_R16_INDEX_INBOUNDS(_reg0) && VM_R16_INDEX_INBOUNDS(_reg1))
+        VM_UINT16_T(VM_R16(_reg1 - VM_R16_END, *vm)) = vm_inc_ui16(VM_UINT16_T(VM_R16(_reg0 - VM_R16_END, *vm)));
+    else if(VM_R32_INDEX_INBOUNDS(_reg0) && VM_R32_INDEX_INBOUNDS(_reg1))
+        VM_UINT32_T(VM_R32(_reg1 - VM_R32_END, *vm)) = vm_inc_ui32(VM_UINT32_T(VM_R32(_reg0 - VM_R32_END, *vm)));
+    else if(VM_R64_INDEX_INBOUNDS(_reg0) && VM_R64_INDEX_INBOUNDS(_reg1))
+        VM_UINT64_T(VM_R64(_reg1 - VM_R64_END, *vm)) = vm_inc_ui64(VM_UINT64_T(VM_R64(_reg0 - VM_R64_END, *vm)));
+    else if(VM_R128_INDEX_INBOUNDS(_reg0) && VM_R128_INDEX_INBOUNDS(_reg1))
+        VM_UINT128_T(VM_R128(_reg1 - VM_R128_END, *vm)) = vm_inc_ui128(VM_UINT128_T(VM_R128(_reg0 - VM_R128_END, *vm)));
+    else if(VM_R256_INDEX_INBOUNDS(_reg0) && VM_R256_INDEX_INBOUNDS(_reg1))
+        VM_UINT256_T(VM_R256(_reg1 - VM_R256_END, *vm)) = vm_inc_ui256(VM_UINT256_T(VM_R256(_reg0 - VM_R256_END, *vm)));
+    else vm->halt = true;
+}
+void _vm_dec_r_r(const vm_uint8_t* reg0, const vm_uint8_t* reg1, VMInstance* vm){
+    // dec from_r, to_r ; snd from_r - 1, to_r
+    vm_uint8_t _reg0 = *reg0;
+    vm_uint8_t _reg1 = *reg1;
+
+    if(VM_R8_INDEX_INBOUNDS(_reg0) && VM_R8_INDEX_INBOUNDS(_reg1))
+        VM_UINT8_T(VM_R8(_reg1 - VM_R8_END, *vm)) = VM_UINT8_T(VM_R8(_reg0 - VM_R8_END, *vm)) - 1;
+    else if(VM_R16_INDEX_INBOUNDS(_reg0) && VM_R16_INDEX_INBOUNDS(_reg1))
+        VM_UINT16_T(VM_R16(_reg1 - VM_R16_END, *vm)) = vm_dec_ui16(VM_UINT16_T(VM_R16(_reg0 - VM_R16_END, *vm)));
+    else if(VM_R32_INDEX_INBOUNDS(_reg0) && VM_R32_INDEX_INBOUNDS(_reg1))
+        VM_UINT32_T(VM_R32(_reg1 - VM_R32_END, *vm)) = vm_dec_ui32(VM_UINT32_T(VM_R32(_reg0 - VM_R32_END, *vm)));
+    else if(VM_R64_INDEX_INBOUNDS(_reg0) && VM_R64_INDEX_INBOUNDS(_reg1))
+        VM_UINT64_T(VM_R64(_reg1 - VM_R64_END, *vm)) = vm_dec_ui64(VM_UINT64_T(VM_R64(_reg0 - VM_R64_END, *vm)));
+    else if(VM_R128_INDEX_INBOUNDS(_reg0) && VM_R128_INDEX_INBOUNDS(_reg1))
+        VM_UINT128_T(VM_R128(_reg1 - VM_R128_END, *vm)) = vm_dec_ui128(VM_UINT128_T(VM_R128(_reg0 - VM_R128_END, *vm)));
+    else if(VM_R256_INDEX_INBOUNDS(_reg0) && VM_R256_INDEX_INBOUNDS(_reg1))
+        VM_UINT256_T(VM_R256(_reg1 - VM_R256_END, *vm)) = vm_dec_ui256(VM_UINT256_T(VM_R256(_reg0 - VM_R256_END, *vm)));
+    else vm->halt = true;
+}
+
 
 /////////////////////////////////////////////////////
 //       GLOBAL INSTRUCTION DESCRIPTORS TABLE
@@ -637,7 +679,7 @@ VMInstructionDescriptorsTable GIDT = {
             .itype = SINGLE,
             .op0_type = REGISTER,
             .op0_size = UINT8_T,
-            .icode = {0x00, 0x00, 0x00, 0x1A},
+            .icode = {0x00, 0x00, 0x00, 0x1a},
             .alias = "pop128",
             .impl = _vm_pop128
         },
@@ -645,12 +687,28 @@ VMInstructionDescriptorsTable GIDT = {
             .itype = SINGLE,
             .op0_type = REGISTER,
             .op0_size = UINT8_T,
-            .icode = {0x00, 0x00, 0x00, 0x1B},
+            .icode = {0x00, 0x00, 0x00, 0x1b},
             .alias = "pop256",
             .impl = _vm_pop256
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = REGISTER, .op1_type = REGISTER,
+            .op0_size = UINT8_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x1c},
+            .alias = "inc",
+            .impl = _vm_inc_r_r
+        },
+        (VMInstructionDescriptor){
+            .itype = DOUBLE,
+            .op0_type = REGISTER, .op1_type = REGISTER,
+            .op0_size = UINT8_T, .op1_size = UINT8_T,
+            .icode = {0x00, 0x00, 0x00, 0x1d},
+            .alias = "dec",
+            .impl = _vm_dec_r_r
         }
     },
-    .size = 27
+    .size = 29
 };
 
 
@@ -724,7 +782,7 @@ void vmExecProgram(const VMProgram* prog, VMInstance* vm, const VMInstructionDes
 }
 
 
-VMParser vmParseInstruction(const vm_uint8_t* bytecode, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
+VMParser vmParseInstruction(const vm_uint8_t* bytecode, const VMInstructionDescriptorsExt* ext){
     VMParser result = {
         .instr = {.icode = NULL},
         .next = bytecode
@@ -764,14 +822,14 @@ VMParser vmParseInstruction(const vm_uint8_t* bytecode, VMInstance* vm, const VM
     return result;
 }
 
-VMProgram vmParseProgram(const vm_uint8_t* bytecode, VMInstance* vm, const VMInstructionDescriptorsExt* ext){
+VMProgram vmParseProgram(const vm_uint8_t* bytecode, const VMInstructionDescriptorsExt* ext){
     VMProgram result = {.size = 0};
 
-    VMParser parser = vmParseInstruction(bytecode, vm, ext);
+    VMParser parser = vmParseInstruction(bytecode, ext);
 
     while(parser.instr.icode != NULL){
         result.program[result.size++] = parser.instr;
-        parser = vmParseInstruction(parser.next, vm, ext);
+        parser = vmParseInstruction(parser.next, ext);
     }
 
     return result;
