@@ -1,5 +1,5 @@
 #pragma once
-#include "vm256_stdint.h"
+#include "vm256_types.h"
 
 #define VM_STACK_SIZE 8192
 #define VM_IDT_SIZE 1024
