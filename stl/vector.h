@@ -24,9 +24,13 @@
 // definitions
 #define std_vector(T) _cat(_std_vector_, T)
 
-#define VECTORS(T) typedef struct std_vector(T){\
+#define USE_VECTOR(T) struct _cat(func_, std_vector(T));\
+typedef struct std_vector(T){\
     size_t _size, _capacity;\
     T* _data;\
+	struct _cat(func_, std_vector(T))* funcs;\
+}std_vector(T);\
+typedef struct _cat(func_, std_vector(T)){\
     void (*reserve)(struct std_vector(T)*, size_t);\
     void (*destruct)(struct std_vector(T)*);\
     void (*clear)(struct std_vector(T)*);\
@@ -39,7 +43,7 @@
     T* (*back)(struct std_vector(T)*);\
     void (*push_back)(struct std_vector(T)*, T);\
     T (*pop_back)(struct std_vector(T)*);\
-} std_vector(T);\
+} _cat(func_, std_vector(T));\
 typedef T* _cat(_iter, std_vector(T));\
 void _cat(_reserve, std_vector(T))(std_vector(T)* vec, size_t size){\
     vec->_capacity = size > 1 ? size : 2;\
@@ -84,7 +88,7 @@ T* _cat(_back, std_vector(T))(std_vector(T)* vec){\
     return vec->_data + vec->_size - 1;\
 }\
 void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
-    if(vec->_capacity == 0) vec->reserve(vec, 2);\
+    if(vec->_capacity == 0) vec->funcs->reserve(vec, 2);\
     vec->_size++;\
     if(vec->_size > vec->_capacity){\
         vec->_capacity *= STD_VECTOR_CAPACITY_GROW;\
@@ -94,41 +98,14 @@ void _cat(_push_back, std_vector(T))(std_vector(T)* vec, T value){\
             exit(EXIT_FAILURE);\
         }\
     }\
-    *vec->back(vec) = value;\
+    *vec->funcs->back(vec) = value;\
 }\
 T _cat(_pop_back, std_vector(T))(std_vector(T)* vec){\
-    T result = *vec->back(vec);\
+    T result = *vec->funcs->back(vec);\
     vec->_size--;\
     return result;\
-}
-
-// methods
-#define std_vector_iterator(T) _cat(_iter, std_vector(T))
-
-#ifndef std_begin
-#define std_begin(CONTAINER) (CONTAINER).begin(&(CONTAINER))
-#endif
-
-#ifndef std_end
-#define std_end(CONTAINER) (CONTAINER).end(&(CONTAINER))
-#endif
-
-#ifndef std_back
-#define std_back(CONTAINER) (CONTAINER).back(&(CONTAINER))
-#endif
-
-#ifndef std_swap
-#define std_swap(ITER1, ITER2) ((*ITER2) = ((*ITER1) + (*ITER2)) - ((*ITER1) = (*ITER2)))
-#endif
-
-#ifndef foreach
-#define foreach(CONTAINER) for(__typeof__(std_begin(CONTAINER)) it = std_begin(CONTAINER);\
-it < std_end(CONTAINER);\
-it++)
-#endif
-
-#define std_vector_default(T) (std_vector(T)){\
-    0, 0, NULL, \
+}\
+_cat(func_, std_vector(T)) _cat(vfuncs_, std_vector(T))={\
     _cat(_reserve, std_vector(T)), \
     _cat(_destruct, std_vector(T)), \
     _cat(_clear, std_vector(T)), \
@@ -141,70 +118,42 @@ it++)
     _cat(_back, std_vector(T)), \
     _cat(_push_back, std_vector(T)), \
     _cat(_pop_back, std_vector(T))\
-}
+};
+// methods
+#define std_vector_iterator(T) _cat(_iter, std_vector(T))
 
-// types (std)
-#ifndef STD_VECTOR_DONT_USE_PREDEFINED_TYPES
-
-typedef unsigned char unsigned_char;
-typedef unsigned short unsigned_short;
-typedef unsigned int unsigned_int;
-typedef unsigned long int unsigned_long_int;
-typedef unsigned long long int unsigned_long_long_int; 
-typedef unsigned long unsigned_long; 
-typedef long int long_int;
-typedef long long int long_long_int;
-typedef long double long_double;
-
-VECTORS(unsigned_char)
-VECTORS(unsigned_short)
-VECTORS(unsigned_int)
-VECTORS(unsigned_long_int)
-VECTORS(unsigned_long)
-VECTORS(unsigned_long_long_int)
-VECTORS(char)
-VECTORS(short)
-VECTORS(int)
-VECTORS(long_int)
-VECTORS(long_long_int)
-VECTORS(long)
-
-VECTORS(float)
-VECTORS(double)
-VECTORS(long_double)
-
-// types (stddef)
-VECTORS(size_t)
-VECTORS(ptrdiff_t)
-VECTORS(wchar_t)
-
-// types (stdint)
-VECTORS(int_least8_t)
-VECTORS(int_least16_t)
-VECTORS(int_least32_t)
-VECTORS(int_least64_t)
-VECTORS(uint_least8_t)
-VECTORS(uint_least16_t)
-VECTORS(uint_least32_t)
-VECTORS(uint_least64_t)
-VECTORS(int_fast8_t)
-VECTORS(int_fast16_t)
-VECTORS(int_fast32_t)
-VECTORS(int_fast64_t)
-VECTORS(uint_fast8_t)
-VECTORS(uint_fast16_t)
-VECTORS(uint_fast32_t)
-VECTORS(uint_fast64_t)
-
-VECTORS(int8_t)
-VECTORS(int16_t)
-VECTORS(int32_t)
-VECTORS(int64_t)
-VECTORS(uint8_t)
-VECTORS(uint16_t)
-VECTORS(uint32_t)
-VECTORS(uint64_t)
-
-VECTORS(bool)
-
+#ifndef std_reserve
+#define std_reserve(CONTAINER, VAL) (CONTAINER).funcs->reserve(&(CONTAINER), VAL)
 #endif
+
+#ifndef std_push_back
+#define std_push_back(CONTAINER, VAL) (CONTAINER).funcs->push_back(&(CONTAINER), VAL)
+#endif
+
+#ifndef std_destruct
+#define std_desturct(CONTAINER) (CONTAINER).funcs->begin(&(CONTAINER))
+#endif
+
+#ifndef std_begin
+#define std_begin(CONTAINER) (CONTAINER).funcs->begin(&(CONTAINER))
+#endif
+
+#ifndef std_end
+#define std_end(CONTAINER) (CONTAINER).funcs->.end(&(CONTAINER))
+#endif
+
+#ifndef std_back
+#define std_back(CONTAINER) (CONTAINER).funcs->back(&(CONTAINER))
+#endif
+
+#ifndef std_swap
+#define std_swap(ITER1, ITER2) ((*ITER2) = ((*ITER1) + (*ITER2)) - ((*ITER1) = (*ITER2)))
+#endif
+
+#ifndef foreach
+#define foreach(CONTAINER) for(__typeof__(std_begin(CONTAINER)) it = std_begin(CONTAINER);\
+it < std_end(CONTAINER);\
+it++)
+#endif
+
+#define std_vector_default(T, name) std_vector(T) name ={0, 0, NULL, &_cat(vfuncs_, std_vector(T))}
